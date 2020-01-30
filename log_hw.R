@@ -4,6 +4,7 @@ dim(birthwt)
 head(birthwt,6)
 ?birthwt
 
+
 birthwt1 <- birthwt[,-10]
 class <- apply(birthwt1,2,class)
 
