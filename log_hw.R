@@ -15,7 +15,7 @@ model <- glm(low~.,family = binomial,data = birthwt1)
 summary(model)
 
 pchisq(201.38,179,lower.tail=F)
-
+selection <- stepAIC(model,direction="backward")
 confint(model)
 oddsratio <- exp(model$coefficients)
 pred <- predict(model,newdata=birthwt1,type = "response")
