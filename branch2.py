@@ -28,8 +28,7 @@ def match_with_exonlist(df_ori,df_exonlist,dict_exonCoords):
                 Exonlist = item.split('|')
                 for i in range(len(Exonlist)):
                     coords = dict_exonCoords[Exonlist[i]]
-                    path='http://genome.ucsc.edu/cgi-bin/das/hg38/dna?segment='
-                            + coords[0] + ':' + coords[1] + ',' + coords[2]
+                    path='http://genome.ucsc.edu/cgi-bin/das/hg38/dna?segment=' + coords[0] + ':' + coords[1] + ',' + coords[2]
                     frag=mich.web_scraping(path)
                     full_transcript += frag
                 pot_fullAA=mich.translate(full_transcript)
@@ -69,9 +68,11 @@ def find_longest_AA(listAA):
     
     
 if __name__ == "__main__":
-    df_ori = pd.read_csv('/Users/ligk2e/Desktop/df_decrease.txt',sep='\t')
-    df_exonlist = pd.read_csv('/Users/ligk2e/Desktop/project/mRNA-ExonIDs.txt',sep='\t')
-    dict_exonCoords = exonCoords_to_dict('/Users/ligk2e/Desktop/project/Hs_Ensembl_exon.txt','\t')
+    df_ori = pd.read_csv('df_decrease.txt',sep='\t')
+    df_exonlist = pd.read_csv('project/mRNA-ExonIDs.txt',sep='\t')
+    dict_exonCoords = exonCoords_to_dict('project/Hs_Ensembl_exon.txt','\t')
+    result = match_with_exonlist(df_ori,df_exonlist,dict_exonCoords)
+    result.to_csv('ban2.txt',sep='\t',header=True,index=False)
 
 
     

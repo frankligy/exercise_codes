@@ -61,10 +61,10 @@ if __name__ == '__main__':
 #    df_decrease = df_whole[df_whole['dPSI']<0]
 #    df_increase.to_csv('/Users/ligk2e/Desktop/df_increase.txt',sep='\t',header=True,index=False)
 #    df_decrease.to_csv('/Users/ligk2e/Desktop/df_decrease.txt',sep='\t',header=True,index=False)
-    df_ori = pd.read_csv('/Users/ligk2e/Desktop/df_decrease.txt',sep='\t')
-    translation_de = mich.translate_junction('/Users/ligk2e/Desktop/df_decrease.txt','\t')
-    dbase = mich.make_dict('/Users/ligk2e/Desktop/project/SEQUENCE-protein-dbase_exoncomp.txt')
+    df_ori = pd.read_csv('df_decrease.txt',sep='\t')
+    translation_de = mich.translate_junction('df_decrease.txt','\t')
+    dbase = mich.make_dict('/project/SEQUENCE-protein-dbase_exoncomp.txt')
     result = match_with_dbase(translation_de,df_ori,dbase)
-    
+    result.to_csv('ban1.txt',sep='\t',header=True,index=False)
     
     
