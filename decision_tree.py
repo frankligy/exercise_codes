@@ -68,8 +68,15 @@ class decision_tree:
             fig.savefig(path)
             plt.close(fig)
       ''' 
-    
-    
+                 
+if __name__ == "__main__":
+    df = pd.read_csv('Biomechanical_Data_2Classes.csv',sep=',')
+    q1 = decision_tree(df,{'class1':'Abnormal','class2':'Normal'})
+    X_train,X_test,Y_train,Y_test = q1.Split(80/230,1)
+    accuracy,precision1,precision2,recall1,recall2 = [],[],[],[],[]
+    for val in [5,15,25,40,50]: 
+        clf = q1.Construction(X_train,Y_train,{'leafnode_record'= val})
+        metrics_dict = q1.Prediction(X_test,Y_test,clf)
     
     
     
