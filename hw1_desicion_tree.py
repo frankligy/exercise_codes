@@ -76,14 +76,31 @@ def draw_dt2(class1,class2,accuracy,precision,recall,path):
     fig.savefig(path)
     plt.close(fig)
 
-
+def truncating_df(df):
+    df['dicho_class'] = ''
+    df.loc[data2['class']=='Abnormal','dicho_class'] = 1
+    df.loc[data2['class']=='Normal','dicho_class'] = 0
+    df_new = df.drop('class',axis=1)
+    correlation = df_new.corr()
+    corr_with_class = list(correlation.loc['dicho_class'])
+    abs_value = [abs(ele) for ele in corr_with_class]
+    temp = abs_value.sort(reverse=True)[1]
+    temp_index = corr_with_class.index(temp)
+    name = df.iloc(temp_index)
+    df_new2 = df_new.drop(name,axis=1)
+    return df_new2
+    
+    
+    
 if __name__ == '__main__':
-    data2 = pd.read_csv('/Users/ligk2e/Desktop/Biomechanical_Data_2Classes.csv',sep=',')
+    data2 = pd.read_csv('/Users/ligk2e/Desktop/IDA1/Biomechanical_Data_2Classes.csv',sep=',')
     leafnode_length = [5,15,25,40,50]
     X2_train,X2_test,Y2_train,Y2_test = split_train_test(230,3)
     accuracy,precision,recall = decision_tree2('Abnormal','Normal')
     draw_dt2('Abnormal','Normal',accuracy,precision,recall,'/Users/ligk2e/Desktop/IDA1/metrics.svg')
-
-
+    
+    
+    data4 = truncating_df(data2)
+    
 
 
