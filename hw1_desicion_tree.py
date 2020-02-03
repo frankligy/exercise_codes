@@ -86,7 +86,7 @@ def truncating_df(df):
     abs_value = [abs(ele) for ele in corr_with_class]
     temp = abs_value.sort(reverse=True)[1]
     temp_index = corr_with_class.index(temp)
-    name = df.iloc(temp_index)
+    name=list(df_new.columns)[temp_index]
     df_new2 = df_new.drop(name,axis=1)
     return df_new2
     
