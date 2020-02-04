@@ -8,17 +8,20 @@ Created on Sun Feb  2 14:05:41 2020
 import pandas as pd
 import task1_mod as mich
 import os
-
+os.chdir('/Users/ligk2e/Desktop/')
 def match_with_exonlist(df_ori,df_exonlist,dict_exonCoords):
-    
+#    sum = 0
     for i in range(df_ori.shape[0]):
         amino_acid_seq=[]
         temp=mich.UID(df_ori,i)
         EnsID=list(temp.keys())[0].split(':')[1]
-        Exons=list(temp.values())[0][1].split('-')[0] + '|' + list(temp.values())[0][1].split('-')[1]
+        Exons=list(temp.values())[0][0].split('-')[0] + '|' + list(temp.values())[0][0].split('-')[1]
+        #print([EnsID,Exons])
         try:
             df_certain = df_exonlist[df_exonlist['EnsGID'] == EnsID]
         except:
+#            sum += 1
+#            print(sum)
             #print('{} can not match up with anything'.format(EnsID))
             continue
         for item in list(df_certain['Exons']):
@@ -26,12 +29,17 @@ def match_with_exonlist(df_ori,df_exonlist,dict_exonCoords):
             fullAA=[]
             if Exons in item:
                 Exonlist = item.split('|')
-                for i in range(len(Exonlist)):
-                    coords = dict_exonCoords[Exonlist[i]]
-                    path='http://genome.ucsc.edu/cgi-bin/das/hg38/dna?segment=' + coords[0] + ':' + coords[1] + ',' + coords[2]
-                    frag=mich.web_scraping(path)
+                for j in range(len(Exonlist)):
+                    coords = dict_exonCoords[Exonlist[j]]
+                    path='http://genome.ucsc.edu/cgi-bin/das/hg38/dna?segment='\
+                            + coords[0] + ':' + coords[1] + ',' + coords[2]
+                    frag=mich.web_scraping('Get',path).strip('\n')
+                    #print(frag+'$')
                     full_transcript += frag
+                full_transcript = full_transcript.replace('\n','')
+                #print(full_transcript)    
                 pot_fullAA=mich.translate(full_transcript)
+                print(pot_fullAA)
                 max_fullAA=find_longest_AA(list(pot_fullAA.values()))
                 fullAA.append(max_fullAA)
         if fullAA:
@@ -47,6 +55,7 @@ def exonCoords_to_dict(path,delimiter):
     coords=[]
     dict_exonCoords={}
     with open(path,'r') as file:
+        next(file)
         for line in file:
             items = line.split('\t')
             coords=(items[2],items[4],items[5])
@@ -68,11 +77,11 @@ def find_longest_AA(listAA):
     
     
 if __name__ == "__main__":
-    df_ori = pd.read_csv('df_decrease.txt',sep='\t')
-    df_exonlist = pd.read_csv('project/mRNA-ExonIDs.txt',sep='\t')
-    dict_exonCoords = exonCoords_to_dict('project/Hs_Ensembl_exon.txt','\t')
-    result = match_with_exonlist(df_ori,df_exonlist,dict_exonCoords)
-    result.to_csv('ban2.txt',sep='\t',header=True,index=False)
-
+    df_ori = pd.read_csv('/Users/ligk2e/Desktop/df_decrease.txt',sep='\t')
+    df_exonlist = pd.read_csv('/Users/ligk2e/Desktop/project/mRNA-ExonIDs.txt',sep='\t',
+                              header=None,names=['EnsGID','EnsTID','EnsPID','Exons'])
+    dict_exonCoords = exonCoords_to_dict('/Users/ligk2e/Desktop/project/Hs_Ensembl_exon.txt','\t')
+    match_with_exonlist(df_ori,df_exonlist,dict_exonCoords)
+   
 
     
