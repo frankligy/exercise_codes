@@ -9,6 +9,8 @@ apply(BreastCancer1,2,class)
 typeof(BreastCancer1$Cl.thickness)
 mode(BreastCancer1$Cl.thickness)
 str(BreastCancer1$Cl.thickness)
+sapply(BreastCancer1, class)
+lapply(BreastCancer1,class)
 
 sapply(BreastCancer1, class)
 lapply(BreastCancer1,class)
