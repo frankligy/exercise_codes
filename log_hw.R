@@ -9,6 +9,7 @@ birthwt1 <- birthwt[,-10]
 class <- apply(birthwt1,2,class)
 
 birthwt1$race <- factor(birthwt1$race,labels=c("white","black","other"))
+# this factor function is specially designed for regression, the labels just tell the computer to set "white" as base.
 table(birthwt1$race)
 
 model <- glm(low~.,family = binomial,data = birthwt1)
