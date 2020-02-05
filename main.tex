@@ -1,0 +1,234 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{wrapfig}
+\usepackage{float}
+\usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
+\usepackage[colorlinks]{hyperref}
+\usepackage{indentfirst}
+\usepackage{svg}
+
+\title{Decision Tree}
+\author{Guangyuan Li}
+\date{\today{}}
+
+\setlength{\parindent}{2em}
+%\setlength{\parskip}{1em}
+%\renewcommand{\baselinestretch}{1}
+
+\begin{document}
+
+\maketitle
+
+\section{Separating "Abnormal" and "Normal"}
+\subsection*{a. Tree structures with different leafnodes constraint}
+By setting the \textbf{min\_sample\_leaf} parameter as 5,15,25,40,50, we generated five different trees. Visualization was performed by "graphviz". \autoref{fig1} in page \pageref{fig1} are the five trees with different parameters.
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question1/tree5.png}
+    \caption{Tree with 5 leafnode records}
+    \label{q1_tree5}
+    \end{subfigure}
+    
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question1/tree15.png}
+    \caption{Tree with 15 leafnode records}
+    \label{q1_tree15}
+    \end{subfigure}
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question1/tree25.png}
+    \caption{Tree with 25 leafnode records}
+    \label{fig1_tree5}
+    \end{subfigure}. %overhere the blankline is super important
+    
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question1/tree40.png}
+    \caption{Tree with 40 leafnode records}
+    \label{q1_tree40}
+    \end{subfigure}
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question1/tree50.png}
+    \caption{Tree with 50 leafnode records}
+    \label{q1_tree50}
+    \end{subfigure} 
+    
+    \caption{Tree structure for separating "Abnormal" and "Normal"}
+    \label{fig1}
+\end{figure}
+
+With the increase of the minimum records in leafnode, the depth of decision tree become more and more shallow. In the meantime, it looks like patients from two different group are not able to be thoroughly separated if the number of records in leafnode are constrained to a very large value.
+
+Python3 codes are available thorugh \href{https://github.com/frankligy/exercise_codes/blob/master/hw1_desicion_tree.py}{github}.
+
+\subsection*{b. Plot of accuracy, precision and recall}
+Accuracy, precision and recall could be calculated by scikit-learn metrics module and matplotlib was adoped to generate the \autoref{fig2} below.
+\begin{center}
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+    \hline
+     & node5 & node15 & node25 &node 40 & node50 \\
+    \hline
+    Accuracy & 0.84 & 0.83 & 0.81 & 0.73 & 0.81\\
+    \hline
+    Precision[Abnormal] & 0.91 & 0.85 & 0.84 & 0.75 & 0.86\\
+    \hline
+    Precision[Normal] & 0.74 & 0.79 & 0.76 & 0.71 & 0.74\\
+    \hline
+    Recall[Abnormal] & 0.82 & 0.88 & 0.86 & 0.88 & 0.84\\
+    \hline
+    Recall[Normal]& 0.87 & 0.73& 0.73 & 0.5& 0.76\\
+    \hline
+    \end{tabular}
+\end{center}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.8]{decision_tree_images/question1/metrics.png}
+    \caption{Accuracy, precision and recall for different leafnode records}
+    \label{fig2}
+\end{figure}
+
+The trend of different metrics vary a lot with the increase of min\_records\_leafnode. Generally speaking, the performance drops down when increasing the records of leaf node because it shrunk the depth of decision tree, triggering the issue of "underfitting".
+
+\section{Separating "Hernia", "Spondylolisthesis" and "Normal"}
+\subsection*{a. Tree structures with different leafnodes constraint}
+Same process was applied as question1, \autoref{fig3} in page \pageref{fig3} are the five trees with different parameters. Contrasting with the tree structure in question1, similar issues was observed since the shrinkage of decision tree, the patients are not able to be notably separated when leafnode records get above 40.
+
+Python3 codes are available thorugh \href{https://github.com/frankligy/exercise_codes/blob/master/decision_tree_copy2.py}{github}.
+
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question2/tree5.png}
+    \caption{Tree with 5 leafnode records}
+    \label{q2_tree5}
+    \end{subfigure}
+    
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question2/tree15.png}
+    \caption{Tree with 15 leafnode records}
+    \label{q2_tree15}
+    \end{subfigure}
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question2/tree25.png}
+    \caption{Tree with 25 leafnode records}
+    \label{q2_tree25}
+    \end{subfigure}. %overhere the blankline is super important
+    
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question2/tree40.png}
+    \caption{Tree with 40 leafnode records}
+    \label{q2_tree40}
+    \end{subfigure}
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question2/tree50.png}
+    \caption{Tree with 50 leafnode records}
+    \label{q2_tree50}
+    \end{subfigure} 
+    
+    \caption{Tree structure for separating "Hernia","Spondylolisthesis" and "Normal"}
+    \label{fig3}
+\end{figure}
+
+\subsection*{b. Plot of accuracy, precision and recall}
+Same process was applied and \autoref{fig4} was generated as a recapitulation of all the metrics. The precision of normal patients stay constant and same as question1, there is no consistent trends we observed here. However, we could tentatively draw the conclusion that increasing of records in leafnode doesn't have drastic impact on performance in this multi-class problem.
+
+\begin{center}
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+    \hline
+     & node5 & node15 & node25 &node 40 & node50 \\
+    \hline
+    Accuracy & 0.85 & 0.86 & 0.85 & 0.85 & 0.85\\
+    \hline
+    Precision[Hernia] & 0.71 & 0.7 & 0.61 & 0.67 & 0.67\\
+    \hline
+    Precision[Spondylolisthesis] & 0.97 & 0.97 & 0.97 & 0.97 & 0.97\\
+    \hline
+    Precision[Normal] &0.75 & 0.78 & 0.8 & 0.76 & 0.76\\
+    \hline
+    Recall[Hernia] & 0.35 & 0.5 & 0.57 & 0.43 & 0.43\\
+    \hline
+    Recall[Spondylolisthesis] 1 & 1 & 1 & 1 & 1 & 1\\
+    \hline
+    Recall[Normal]& 0.9 & 0.87 & 0.8 & 0.87 & 0.87\\
+    \hline
+    \end{tabular}
+\end{center}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=1]{decision_tree_images/question2/metrics.png}
+    \caption{Accuracy, precision and recall for different leafnode records}
+    \label{fig4}
+\end{figure}
+
+\section{Redo the "Abnormal" and "Normal" after trimming most correlated variable}
+\subsection*{a. Tree structure of different leafnodes}
+After calculating the correlations between each column, deleting the most correlated column(degree of spondylolisthesis). We obtained the new data frame and apply the same process described above. Reference to \autoref{fig5} in page \pageref{fig5}
+
+Python3 codes are available thorugh \href{https://github.com/frankligy/exercise_codes/blob/master/decision_tree_copy3.py}{github}.
+
+\begin{figure}[h]
+    \centering
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question3/tree5.png}
+    \caption{Tree with 5 leafnode records}
+    \label{q3_tree5}
+    \end{subfigure}
+    
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question3/tree15.png}
+    \caption{Tree with 15 leafnode records}
+    \label{q3_tree15}
+    \end{subfigure}
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question3/tree25.png}
+    \caption{Tree with 25 leafnode records}
+    \label{q3_tree25}
+    \end{subfigure}. %over here the blank line is super important
+    
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question3/tree40.png}
+    \caption{Tree with 40 leafnode records}
+    \label{q3_tree40}
+    \end{subfigure}
+    \begin{subfigure}[h]{.45\linewidth}
+    \includegraphics[width=\linewidth]{decision_tree_images/question3/tree50.png}
+    \caption{Tree with 50 leafnode records}
+    \label{q3_tree50}
+    \end{subfigure} 
+    
+    \caption{Tree structure for separating "Abnormal "and "Normal" after trimming}
+    \label{fig5}
+\end{figure}
+
+\subsection*{b. Plot of accuracy, precision and recall}
+We can obtain all the necassary metrics using same calculation and scripts. Refernce to \autoref{fig6} in \pageref{fig6}
+\begin{center}
+    \begin{tabular}{|c|c|c|c|c|c|c|}
+    \hline
+     & node5 & node15 & node25 &node 40 & node50 \\
+    \hline
+    Accuracy & 0.6875 & 0.6625 & 0.6625 & 0.6625 & 0.65\\
+    \hline
+    Precision[Abnormal] & 0.75 & 0.68 & 0.70 & 0.70 & 0.69\\
+    \hline
+    Precision[Normal] & 0.58 & 0.57 & 0.56 & 0.56 & 0.55\\
+    \hline
+    Recall[Abnormal] & 0.60 & 0.37 & 0.43 & 0.43 & 0.4\\
+    \hline
+    Recall[Normal] & 0.6&0.37&0.43&0.43&0.4\\
+    \hline
+    \end{tabular}
+\end{center}
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=1]{decision_tree_images/question3/metrics.png}
+    \caption{Accuracy, precision and recall for different leafnode records}
+    \label{fig6}
+\end{figure}
+\subsection*{c. Comparison with question1 and queation2}
+Notable decrease in model performance could be observed regarding each readout, which suggests that degree of spondylolisthesis plays an important role in the development of disease. It also reminds us of how important it is to take reasonable predictors, which could greatly boost the performance and vice versa. In terms of the trend, no consistent trend we saw in this situation and it seems like increasing of records in leafnode doesn't have large impact on performance as well.
+\end{document}
