@@ -5,14 +5,16 @@ Created on Sun Feb  2 14:05:41 2020
 
 @author: ligk2e
 """
+
+from Bio.SeqIO.FastaIO import SimpleFastaParser
 import pandas as pd
 import task1_mod as mich
 import os
 os.chdir('/Users/ligk2e/Desktop/')
 def match_with_exonlist(df_ori,df_exonlist,dict_exonCoords):
 #    sum = 0
+    amino_acid_seq=[]
     for i in range(df_ori.shape[0]):
-        amino_acid_seq=[]
         temp=mich.UID(df_ori,i)
         EnsID=list(temp.keys())[0].split(':')[1]
         Exons=list(temp.values())[0][0].split('-')[0] + '|' + list(temp.values())[0][0].split('-')[1]
@@ -24,22 +26,24 @@ def match_with_exonlist(df_ori,df_exonlist,dict_exonCoords):
 #            print(sum)
             #print('{} can not match up with anything'.format(EnsID))
             continue
+        fullAA=[]
         for item in list(df_certain['Exons']):
             full_transcript=''
-            fullAA=[]
             if Exons in item:
                 Exonlist = item.split('|')
                 for j in range(len(Exonlist)):
-                    coords = dict_exonCoords[Exonlist[j]]
-                    path='http://genome.ucsc.edu/cgi-bin/das/hg38/dna?segment='\
-                            + coords[0] + ':' + coords[1] + ',' + coords[2]
-                    frag=mich.web_scraping('Get',path).strip('\n')
+                    coords = dict_exonCoords[EnsID][Exonlist[j]]
+                    frag = query_from_dict_fa(dict_fa,coords[1],coords[2],EnsID)
+                    
+#                    path='http://genome.ucsc.edu/cgi-bin/das/hg38/dna?segment='\
+#                            + coords[0] + ':' + coords[1] + ',' + coords[2]
+#                    frag=mich.web_scraping('Get',path).strip('\n')
                     #print(frag+'$')
                     full_transcript += frag
                 full_transcript = full_transcript.replace('\n','')
                 #print(full_transcript)    
                 pot_fullAA=mich.translate(full_transcript)
-                print(pot_fullAA)
+                #print(pot_fullAA)
                 max_fullAA=find_longest_AA(list(pot_fullAA.values()))
                 fullAA.append(max_fullAA)
         if fullAA:
@@ -50,6 +54,31 @@ def match_with_exonlist(df_ori,df_exonlist,dict_exonCoords):
     df_ori['fullAA'] = amino_acid_seq
     return df_ori      
             
+def fasta_to_dict(path):
+    dict_fa = {}
+    with open(path,'r') as in_handle:
+        for title,seq in SimpleFastaParser(in_handle):
+            temp_list = []
+            EnsID = title.split('|')[0]
+            chro = title.split('|')[1]
+            start = title.split('|')[2]
+            end = title.split('|')[3]
+            temp_list=[chro,start,end,seq]
+            dict_fa[EnsID] = temp_list
+    return dict_fa
+        
+def query_from_dict_fa(dict_fa,abs_start,abs_end,EnsID):
+    start = int(dict_fa[EnsID][1])
+    end = int(dict_fa[EnsID][2])
+    seq = dict_fa[EnsID][3]
+    start_index = int(abs_start) - start
+    #print(type(start_index))
+    end_index = int(abs_end) - start
+    exon_seq = seq[start_index:end_index]
+    return exon_seq
+    
+           
+
 
 def exonCoords_to_dict(path,delimiter):
     coords=[]
@@ -57,9 +86,14 @@ def exonCoords_to_dict(path,delimiter):
     with open(path,'r') as file:
         next(file)
         for line in file:
+            dict_temp={}
             items = line.split('\t')
             coords=(items[2],items[4],items[5])
-            dict_exonCoords[items[1]]=coords
+            if items[0] in dict_exonCoords:
+                dict_exonCoords[items[0]][items[1]] = coords
+            else:
+                dict_exonCoords[items[0]] = {}
+                dict_exonCoords[items[0]][items[1]] = coords
     return dict_exonCoords
             
 def find_longest_AA(listAA):
@@ -81,7 +115,8 @@ if __name__ == "__main__":
     df_exonlist = pd.read_csv('/Users/ligk2e/Desktop/project/mRNA-ExonIDs.txt',sep='\t',
                               header=None,names=['EnsGID','EnsTID','EnsPID','Exons'])
     dict_exonCoords = exonCoords_to_dict('/Users/ligk2e/Desktop/project/Hs_Ensembl_exon.txt','\t')
+    dict_fa = fasta_to_dict('/Users/ligk2e/Desktop/project/Hs_gene-seq-2000_flank.fa')
     match_with_exonlist(df_ori,df_exonlist,dict_exonCoords)
-   
+    df_ori.to_csv('/Users/ligk2e/Desktop/result_branch2.txt',sep='\t',header=True,index=False)
 
     
