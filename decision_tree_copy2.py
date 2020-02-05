@@ -82,7 +82,7 @@ if __name__ == '__main__':
     leafnode_length = [5,15,25,40,50]
     X2_train,X2_test,Y2_train,Y2_test = split_train_test(230,3,data3)
     accuracy,precision,recall = decision_tree3('Hernia','Spondylolisthesis','Normal')
-    draw_dt3('Hernia','Spondylolisthesis','Normal',accuracy,precision,recall,'/Users/ligk2e/Desktop/IDA1/q2/metrics.svg')
+    draw_dt3('Hernia','Spondylolisthesis','Normal',accuracy,precision,recall,'/Users/ligk2e/Desktop/IDA1/q2/metrics.png')
     
     
     

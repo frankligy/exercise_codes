@@ -67,10 +67,10 @@ def draw_dt2(class1,class2,accuracy,precision,recall,path):
     fig = plt.figure()
     ax = plt.axes()
     ax.plot(leafnode_length,accuracy,'-g',label='accuracy')
-    ax.plot(leafnode_length,precision[class1],'--r',label='precision[class1]')
-    ax.plot(leafnode_length,precision[class2],'-.k',label='precision[class2]')
-    ax.plot(leafnode_length,recall[class1],':c',label='recall[class1]')
-    ax.plot(leafnode_length,recall[class2],'-m',label='recall[class2]')
+    ax.plot(leafnode_length,precision[class1],'--r',label='precision[{}]'.format(class1))
+    ax.plot(leafnode_length,precision[class2],'-.k',label='precision[{}]'.format(class2))
+    ax.plot(leafnode_length,recall[class1],':c',label='recall[{}]'.format(class1))
+    ax.plot(leafnode_length,recall[class2],'-m',label='recall[{}]'.format(class2))
     ax.set(xlim=(0,55),ylim=(0,1),xlabel='min_records_leafnode',ylabel='metrics',title='metrics plot')
     ax.legend()
     fig.savefig(path)
@@ -97,7 +97,7 @@ if __name__ == '__main__':
     leafnode_length = [5,15,25,40,50]
     X2_train,X2_test,Y2_train,Y2_test = split_train_test(230,3,data2)
     accuracy,precision,recall = decision_tree2('Abnormal','Normal')
-    draw_dt2('Abnormal','Normal',accuracy,precision,recall,'/Users/ligk2e/Desktop/IDA1/metrics.svg')
+    draw_dt2('Abnormal','Normal',accuracy,precision,recall,'/Users/ligk2e/Desktop/IDA1/metrics.png')
     
     
     

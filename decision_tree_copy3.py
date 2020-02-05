@@ -107,7 +107,7 @@ if __name__ == '__main__':
     data4 = truncating_df(df)
     X2_train,X2_test,Y2_train,Y2_test = split_train_test(230,3,data4)
     accuracy,precision,recall = decision_tree2('Abnormal','Normal')
-    draw_dt2('Abnormal','Normal',accuracy,precision,recall,'/Users/ligk2e/Desktop/IDA1/q3/metrics.svg')
+    draw_dt2('Abnormal','Normal',accuracy,precision,recall,'/Users/ligk2e/Desktop/IDA1/q3/metrics.png')
     
     
 
