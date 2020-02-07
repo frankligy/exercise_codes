@@ -1,0 +1,102 @@
+---
+title: "Hw1"
+author: "Frank Li"
+date: "2/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## What is the dimension of the data?
+```{r echo=T}
+library(mlbench)
+library(MASS)
+data(BreastCancer)
+dim(BreastCancer)
+```
+
+## Show the top ten rows of the data
+```{r,echo=F}
+head(BreastCancer,10)
+```
+
+## Eliminating the first column
+```{r echo=T}
+BreastCancer1 <- BreastCancer[,-1]
+head(BreastCancer1,5)
+```
+
+## What is the class of the first predictor?
+```{r echo=T}
+sapply(BreastCancer1,class)
+```
+So the first predictor belongs to **ordered factor**.
+
+## Change the class of each predictor to numeric
+```{r echo=T}
+BreastCancer_predictor <- apply(BreastCancer1[,-10],2,as.numeric)
+BreastCancer_predictor_df <- as.data.frame(BreastCancer_predictor)
+BreastCancer2 <- cbind(BreastCancer_predictor_df,BreastCancer1$Class)
+colnames(BreastCancer2)[10] <- "class"
+head(BreastCancer2,5)
+```
+
+## Identify the missing observations and eliminate them
+```{r echo=T}
+row_has_na <- apply(BreastCancer1,1,function(x){any(is.na(x))})
+sum(row_has_na)
+BreastCancer3 <- BreastCancer2[!row_has_na,]
+```
+
+## Obtain summary statistics of the cleaned data
+```{r echo=T}
+summary(BreastCancer3)
+```
+
+## Fit a logistic regression model to the data, check goodness-of-fit and identify the significant predictors
+First we need to do model selection:
+```{r echo=T}
+model <- glm(class~.,family=binomial,data=BreastCancer3)
+selection <- stepAIC(model,direction="backward")
+```
+Based on the AIC value, we concluded that the best suitable model will be <u>**Class ~ Cl.thickness + Cell.shape + Marg.adhesion + Bare.nuclei + Bl.cromatin + Normal.nucleoli + Mitoses**</u>. Then fitting the model to the data and get the summary:
+```{r echo=T}
+summary(selection)
+```
+According to the p-value of each predictor, Bare.nuclei is the most significant predictor with the **p-value(3.32e-05)**, following by  **Cl.thickness(p=0.0001), Marg.adhession(p=0.004), Bl.cromatin(p=0.006)**, these four predictors are highly significant. In addition, **Normal.nucleoli(p=0.04)** and Cell.shape(p=0.04) also could be considered significant predictors.
+
+Below we check the goodness-of-fit for this logistic regression model:
+```{r echo=T}
+pchisq(103.27,675,lower.tail = F)
+```
+
+Since 1 > 0.05, we don't reject null hypothesis, this chi statistic is highly likely to occur under null model by chance. In concluion, this logistic regression model fits the data very well.
+
+## Obtain Confusion matrix
+```{r echo=T}
+pred<-predict(model,newdata=BreastCancer3,type = "response")
+hard_pred <- ifelse(pred>0.5,"malignant","benign")
+ConfusionMatrix <- table(BreastCancer3$class,hard_pred)
+rownames(ConfusionMatrix) <- c("observed benign","observed malignant")
+colnames(ConfusionMatrix) <- c("predicted benign","predicted maligant")
+ConfusionMatrix
+```
+
+## Calculate the misclassification rate
+```{r echo=T}
+misclassificationrate <- (11+10)/(434+228+11+10)
+misclassificationrate
+```
+
+
+
+
+
+
+
+
+
+
