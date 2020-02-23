@@ -10,7 +10,9 @@ import os
 os.chdir("/Users/ligk2e/Desktop")
 import pickle
 import pandas as pd
-
+import re
+from Bio.Seq import Seq
+from Bio.Alphabet import generic_dna
 
 
     
@@ -81,34 +83,110 @@ def readingframe2peptide(frame_dict):
                 print('Even considering GC and coding frequency are not able to differentiate them')            
     return max_seq
 
+def transcript2peptide(cdna_sequence):
+    # TAA,TGA,TAG
+    # tips: find/index and split function && their corresponding re version for multiple stirng
+    reading_manners = []
+    reading_manners.append(cdna_sequence[0:])
+    reading_manners.append(cdna_sequence[1:])
+    reading_manners.append(cdna_sequence[2:])
+    frag_comp_array = []
+    for manner in reading_manners:       
+#        frag_array = re.split(r'TAA|TGA|TAG',manner)
+        pos = []
+        for m in re.finditer(r'TAA|TGA|TAG',manner):
+            if m.start() % 3 == 0:
+                pos.append(m.start())
+        frag_array = pos_to_frags(pos,manner)
+        for frag in frag_array:
+            if 'ATG' not in frag or len(frag) == 0:
+                continue
+            else:
+                index_start = frag.find('ATG')
+                if (len(frag) - index_start) % 3 == 0:
+                    frag_comp = frag[index_start:]
+                    frag_comp_array.append(frag_comp)
+    #######################
+    max_seq = ''
+    max_length = 0
+    max_item_score = 0
+    global count
+    for item in frag_comp_array:
+        temp1 = len(item)
+        add_score = score_GC(item) + score_coding_bias(item)
+        if temp1 > max_length:
+            max_length = temp1
+            max_item_score = add_score
+            max_seq = item
+        elif temp1 == max_length:
+            if add_score > max_item_score:
+                max_length = temp1
+                max_item_score = add_score
+                max_seq = item
+            elif add_score == max_item_score:
+                count += 1
+                print('Even considering GC and coding frequency are not able to differentiate them',add_score) 
+    max_seq_tran = max_seq
+    max_seq_aa = str(Seq(max_seq,generic_dna).translate(to_stop=False))
+    max_seq_final = [max_seq_tran,max_seq_aa]
+    return max_seq_final
+
+def pos_to_frags(pos,sequence):
+    frag_array = []
+    if pos: #tips: this elegant way to define criteria        
+        frag_array.append(sequence[0:pos[0]])
+        i = 0
+        while i < len(pos)-1:
+            frag_array.append(sequence[pos[i]+3:pos[i+1]])
+            i += 1
+        frag_array.append(sequence[pos[-1]+3:])
+#    else:
+#        pass
+    return frag_array
+        
+    
 def final_conversion(col_pickle_file):
     with open(col_pickle_file,'rb') as col_file:
         col = pickle.load(col_file)
-    output_array = []
+    output_array_aa = []
+    output_array_tran = []
     for event in col:
-        temp_array = []
-        for transcript in event[1]:
+        temp_array_aa = []
+        temp_array_tran = []
+        for transcript in event[2]:
             if transcript == '':
-                temp_array.append(transcript)
+                temp_array_aa.append(transcript)
+                temp_array_tran.append(transcript)
             else:
-                max_pep = readingframe2peptide(transcript) 
-                temp_array.append(max_pep)
-        output_array.append(temp_array)
+                max_pep = transcript2peptide(transcript)[1]
+                max_tran = transcript2peptide(transcript)[0]
+                temp_array_aa.append(max_pep)
+                temp_array_tran.append(max_tran)
+        output_array_aa.append(temp_array_aa)
+        output_array_tran.append(temp_array_tran)
+        output_array = [output_array_aa,output_array_tran]
     return output_array
-               
+
+
+    
     
 
 if __name__ == "__main__":
-   #count =0
+   count =0
    df_ori = pd.read_csv('/Users/ligk2e/Desktop/df_increase.txt',sep='\t')
    output_exam = final_conversion('/Users/ligk2e/Desktop/col1_i.p')
    output_back = final_conversion('/Users/ligk2e/Desktop/col2_i.p')
-   df_ori['exam_match'] = output_exam
-   df_ori['back_match'] = output_back
-   #print(count)
-   df_ori.to_csv('/Users/ligk2e/Desktop/match_i_v1_Feb20.txt',sep='\t',header=True,index=False)
-   output_decrease = [output_exam,output_back]
-   with open('increase.p','wb') as f1:
+   output_exam_aa,output_exam_tran = output_exam[0],output_exam[1]
+   output_back_aa,output_back_tran = output_back[0],output_back[1]
+
+   df_ori['exam_match_aa'] = output_exam_aa
+   df_ori['back_match_aa'] = output_back_aa
+   df_ori['exam_match_tran'] = output_exam_tran
+   df_ori['back_match_tran'] = output_back_tran
+   print(count)
+   df_ori.to_csv('/Users/ligk2e/Desktop/match_i_v1_Feb20_2.txt',sep='\t',header=True,index=False)
+   output_decrease = [output_exam_aa,output_exam_tran,output_back_aa,output_back_tran]
+   with open('increase_2.p','wb') as f1:
        pickle.dump(output_decrease,f1)
    
     
