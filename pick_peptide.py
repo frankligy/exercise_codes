@@ -92,9 +92,9 @@ def transcript2peptide(cdna_sequence):
     reading_manners.append(cdna_sequence[2:])
     frag_comp_array = []
     for manner in reading_manners:       
-#        frag_array = re.split(r'TAA|TGA|TAG',manner)
+#        frag_array = re.split(r'TAA|TGA|TAG',manner), it is for multiple condition
         pos = []
-        for m in re.finditer(r'TAA|TGA|TAG',manner):
+        for m in re.finditer(r'TAA|TGA|TAG',manner):   # for multiple instances
             if m.start() % 3 == 0:
                 pos.append(m.start())
         frag_array = pos_to_frags(pos,manner)
@@ -185,9 +185,9 @@ if __name__ == "__main__":
    df_ori['back_match_tran'] = output_back_tran
    print(count)
    df_ori.to_csv('/Users/ligk2e/Desktop/match_i_v1_Feb20_2.txt',sep='\t',header=True,index=False)
-   output_decrease = [output_exam_aa,output_exam_tran,output_back_aa,output_back_tran]
+   output_increase = [output_exam_aa,output_exam_tran,output_back_aa,output_back_tran]
    with open('increase_2.p','wb') as f1:
-       pickle.dump(output_decrease,f1)
+       pickle.dump(output_increase,f1)
    
     
     
