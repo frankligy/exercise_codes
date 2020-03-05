@@ -97,12 +97,17 @@ def check_if_good_representative(df):
     condition_array = []
     for i in range(df.shape[0]):
         repre = list(df['representative_tran'])[i]
-        junction = list(df['exam_seq'])[i]
-        whole = list(df['whole_tran'])[i]
-        end_repre = whole.find(repre) + len(repre)
-        start_junction = whole.find(junction)
-        if start_junction >= end_repre:
-            condition_array.append(True)
+        if repre:
+            junction = list(df['exam_seq'])[i]
+            whole = list(df['whole_tran'])[i]
+            start_repre = whole.find(repre)
+            end_repre = whole.find(repre) + len(repre)
+            start_junction = whole.find(junction)
+            end_junction = whole.find(junction) + len(junction)
+            if start_junction <= end_repre and end_junction >= start_repre:
+                condition_array.append(True)
+            else:
+                condition_array.append(False)
         else:
             condition_array.append(False)
     df['good_repre'] = condition_array
@@ -211,7 +216,9 @@ if __name__ == "__main__":
     b = df_ori_narrow_good_repre
    
     
-    
+    # ENSG00000282228   - strand use case
+    # ENSG00000110514   +
+    # ENSG00000243646
 
     
     

@@ -11,6 +11,7 @@ import branch2 as br2
 import task1_mod as mich
 import pandas as pd
 from Bio.SeqIO.FastaIO import SimpleFastaParser
+import debug
 
 
 
@@ -37,7 +38,7 @@ def retrieve_junction_site(df_ori):
 def subexon_tran(subexon,EnsID,dict_exonCoords,dict_fa,flag): # flag means if it is site_1 or site_2
     try:
         attrs = dict_exonCoords[EnsID][subexon]
-        exon_seq = br2.query_from_dict_fa(dict_fa,attrs[2],attrs[3],EnsID,attrs[1])
+        exon_seq = br2.query_from_dict_fa(dict_fa,attrs[2],attrs[3],EnsID,attrs[1])  # canonical situation, for safety, just increment 1 for the abs_start
     except:
 #        print(subexon,'t')
         try:
@@ -62,7 +63,7 @@ def subexon_tran(subexon,EnsID,dict_exonCoords,dict_fa,flag): # flag means if it
         
 if __name__ == "__main__":
     df_ori_v2 = pd.read_csv('/Users/ligk2e/Desktop/match_i_v1_Feb20_2.txt',sep='\t')
-    dict_exonCoords = br2.exonCoords_to_dict('/Users/ligk2e/Desktop/project/Hs_Ensembl_exon.txt','\t')
+    dict_exonCoords = debug.debug_boundary_issue('/Users/ligk2e/Desktop/project/Hs_Ensembl_exon.txt')
     dict_fa = br2.fasta_to_dict('/Users/ligk2e/Desktop/project/Hs_gene-seq-2000_flank.fa')
     new_df = retrieve_junction_site(df_ori_v2)
     new_df.to_csv('/Users/ligk2e/Desktop/add_exon_itself.txt',sep='\t',header=True,index=False)

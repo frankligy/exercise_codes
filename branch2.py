@@ -14,6 +14,7 @@ import pandas as pd
 import task1_mod as mich
 from decimal import Decimal as D
 import pickle
+import debug
 
 
 def match_with_exonlist(df_ori,df_exonlist,dict_exonCoords):
@@ -76,10 +77,14 @@ def core_match(df_exonlist,dict_exonCoords,EnsID,Exons):
             Exonlist = item.split('|')
             for j in range(len(Exonlist)):
                 coords = dict_exonCoords[EnsID][Exonlist[j]]
-                frag = query_from_dict_fa(dict_fa,coords[2],coords[3],EnsID,coords[1]) # corresponds to abs_start, abs_end, strand
+                frag = frag = query_from_dict_fa(dict_fa,coords[2],coords[3],EnsID,coords[1])
                 full_transcript += frag
-#                if Exonlist[j] in Exons:
-#                    splicing_transcript += frag
+#                if check_exonlist(Exonlist,j):   
+#                    frag = query_from_dict_fa(dict_fa,coords[2],coords[3],EnsID,coords[1]) # corresponds to abs_start, abs_end, strand
+#                    
+#                else:
+#                    frag = query_from_dict_fa(dict_fa,int(coords[2])+1,coords[3],EnsID,coords[1]) 
+#                full_transcript += frag
             full_transcript = full_transcript.replace('\n','')
 #            splicing_transcript = full_transcript.replace('\n','')
             full_transcript_store.append(full_transcript)   
@@ -93,6 +98,29 @@ def core_match(df_exonlist,dict_exonCoords,EnsID,Exons):
             full_transcript_store.append('')
     result = [final_fullAA,peek_pep,full_transcript_store]
     return result
+
+
+def check_exonlist_stra1(exonlist,index):
+    dict = {}
+    for subexon in exonlist:
+        exon_num = subexon.split('.')[0]
+        if exon_num in dict:
+            dict[exon_num].append(subexon)
+        else:
+            dict[exon_num] = []
+            dict[exon_num].append(subexon)
+    # check
+    query = exonlist[index]
+    if len(dict[query.split('.')[0]]) == 1:
+        return True
+    else:
+        if query == dict[query.split('.')[0]][0]:
+            return True
+        else:
+            return False
+        
+
+        
             
 def fasta_to_dict(path):
     dict_fa = {}
@@ -171,7 +199,7 @@ if __name__ == "__main__":
     df_ori = pd.read_csv('/Users/ligk2e/Desktop/df_increase.txt',sep='\t')
     df_exonlist = pd.read_csv('/Users/ligk2e/Desktop/project/mRNA-ExonIDs.txt',sep='\t',
                               header=None,names=['EnsGID','EnsTID','EnsPID','Exons'])
-    dict_exonCoords = exonCoords_to_dict('/Users/ligk2e/Desktop/project/Hs_Ensembl_exon.txt','\t')
+    dict_exonCoords = debug.debug_boundary_issue('/Users/ligk2e/Desktop/project/Hs_Ensembl_exon.txt')
     dict_fa = fasta_to_dict('/Users/ligk2e/Desktop/project/Hs_gene-seq-2000_flank.fa')
     col1,col2 = match_with_exonlist(df_ori,df_exonlist,dict_exonCoords)
     with open('col1_i.p','wb') as col1_file:

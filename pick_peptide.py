@@ -102,10 +102,14 @@ def transcript2peptide(cdna_sequence):
             if 'ATG' not in frag or len(frag) == 0:
                 continue
             else:
-                index_start = frag.find('ATG')
-                if (len(frag) - index_start) % 3 == 0:
-                    frag_comp = frag[index_start:]
-                    frag_comp_array.append(frag_comp)
+                for n in re.finditer('ATG',frag):
+                    if (len(frag) - n.start()) % 3 == 0:
+                        frag_comp = frag[n.start():]
+                        frag_comp_array.append(frag_comp)
+                        break
+                    else:
+                        continue
+                    
     #######################
     max_seq = ''
     max_length = 0
@@ -128,7 +132,7 @@ def transcript2peptide(cdna_sequence):
                 print('Even considering GC and coding frequency are not able to differentiate them',add_score) 
     max_seq_tran = max_seq
     max_seq_aa = str(Seq(max_seq,generic_dna).translate(to_stop=False))
-    max_seq_final = [max_seq_tran,max_seq_aa]
+    max_seq_final = [max_seq_tran,max_seq_aa,frag_comp_array]
     return max_seq_final
 
 def pos_to_frags(pos,sequence):
@@ -139,7 +143,9 @@ def pos_to_frags(pos,sequence):
         while i < len(pos)-1:
             frag_array.append(sequence[pos[i]+3:pos[i+1]])
             i += 1
-        frag_array.append(sequence[pos[-1]+3:])
+        last_seq = sequence[pos[-1]+3:]
+        if not any(codon in last_seq for codon in ['TAA','TAG','TGA']):
+            frag_array.append(sequence[pos[-1]+3:])
 #    else:
 #        pass
     return frag_array
@@ -150,21 +156,27 @@ def final_conversion(col_pickle_file):
         col = pickle.load(col_file)
     output_array_aa = []
     output_array_tran = []
+    output_peek = []
     for event in col:
         temp_array_aa = []
         temp_array_tran = []
+        temp_peek = []
         for transcript in event[2]:
             if transcript == '':
                 temp_array_aa.append(transcript)
                 temp_array_tran.append(transcript)
+                temp_peek.append(transcript)
             else:
                 max_pep = transcript2peptide(transcript)[1]
                 max_tran = transcript2peptide(transcript)[0]
+                peek = transcript2peptide(transcript)[2]
                 temp_array_aa.append(max_pep)
                 temp_array_tran.append(max_tran)
+                temp_peek.append(peek)
         output_array_aa.append(temp_array_aa)
         output_array_tran.append(temp_array_tran)
-        output_array = [output_array_aa,output_array_tran]
+        output_peek.append(temp_peek)
+        output_array = [output_array_aa,output_array_tran,output_peek]
     return output_array
 
 
@@ -176,7 +188,7 @@ if __name__ == "__main__":
    df_ori = pd.read_csv('/Users/ligk2e/Desktop/df_increase.txt',sep='\t')
    output_exam = final_conversion('/Users/ligk2e/Desktop/col1_i.p')
    output_back = final_conversion('/Users/ligk2e/Desktop/col2_i.p')
-   output_exam_aa,output_exam_tran = output_exam[0],output_exam[1]
+   output_exam_aa,output_exam_tran,p = output_exam[0],output_exam[1],output_exam[2]
    output_back_aa,output_back_tran = output_back[0],output_back[1]
 
    df_ori['exam_match_aa'] = output_exam_aa
@@ -189,7 +201,8 @@ if __name__ == "__main__":
    with open('increase_2.p','wb') as f1:
        pickle.dump(output_increase,f1)
    
-    
+   with open('/Users/ligk2e/Desktop/col1_i.p','rb') as ccc:
+       cccc = pickle.load(ccc)
     
     
     
