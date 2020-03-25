@@ -23,6 +23,8 @@
 # 7. Publish to shinyapps.io or shiny server
 # 8. other layout idea: fluidRow(column(4,offset=8),Plotoutput), example refer to official tutorial.
 # 9. Add CSS to the code, example refer to official tutorial
+# 10. img and .css file should be stored in a subdirectory named www. www folder and app.R are in the same folder, in this way,
+#.  you could just specify the img name, like rt.img instead specifying the whole path.
           
 
 
