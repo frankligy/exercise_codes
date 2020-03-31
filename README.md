@@ -15,4 +15,5 @@ I am also able to code following languages(NOT proficient in):
 * Front-end development: <u>HTML5</u>, <u>CSS3</u>, <u>Javascript</u>, <u>Bootstrap</u>, <u>AngularJS</u>
 * C
 * Matlab
+* Perl
 
