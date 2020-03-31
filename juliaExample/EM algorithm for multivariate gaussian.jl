@@ -122,3 +122,7 @@ major_label_color=colorant"black",
 minor_label_color=colorant"black",Guide.xlabel("PetalLength (in cms)"),Guide.ylabel("PetalWidth (in cmas)"))
 #draw(PNG("./figs/fitting_multivar_iris.png", 6inch, 3inch,dpi=300), myplot);
 
+# if command:
+# if a <b 
+#    command
+# end
