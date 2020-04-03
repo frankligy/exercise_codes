@@ -9,14 +9,46 @@
 \usepackage[colorlinks]{hyperref}
 \usepackage{indentfirst}
 \usepackage{svg}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+
+
+
 
 \title{Decision Tree}
 \author{Guangyuan Li}
 \date{\today{}}
 
 \setlength{\parindent}{2em}
-%\setlength{\parskip}{1em}
-%\renewcommand{\baselinestretch}{1}
+\setlength{\parskip}{1em}
+\renewcommand{\baselinestretch}{1.3}
 
 \begin{document}
 
@@ -190,12 +222,12 @@ Python3 codes are available thorugh \href{https://github.com/frankligy/exercise_
     \end{subfigure}. %over here the blank line is super important
     
     \begin{subfigure}[h]{.45\linewidth}
-    \includegraphics[width=\linewidth]{decision_tree_images/question3/tree40.png}
+    \includegraphics[width=\linewidth]{tree40.png}
     \caption{Tree with 40 leafnode records}
     \label{q3_tree40}
     \end{subfigure}
     \begin{subfigure}[h]{.45\linewidth}
-    \includegraphics[width=\linewidth]{decision_tree_images/question3/tree50.png}
+    \includegraphics[width=\linewidth]{tree50.png}
     \caption{Tree with 50 leafnode records}
     \label{q3_tree50}
     \end{subfigure} 
@@ -225,10 +257,18 @@ We can obtain all the necassary metrics using same calculation and scripts. Refe
 \end{center}
 \begin{figure}[H]
     \centering
-    \includegraphics[scale=1]{decision_tree_images/question3/metrics.png}
+    \includegraphics[scale=1]{metrics.png}
     \caption{Accuracy, precision and recall for different leafnode records}
     \label{fig6}
 \end{figure}
 \subsection*{c. Comparison with question1 and queation2}
 Notable decrease in model performance could be observed regarding each readout, which suggests that degree of spondylolisthesis plays an important role in the development of disease. It also reminds us of how important it is to take reasonable predictors, which could greatly boost the performance and vice versa. In terms of the trend, no consistent trend we saw in this situation and it seems like increasing of records in leafnode doesn't have large impact on performance as well.
+
+\section{Appendix}
+\begin{lstlisting}[language=Python, caption=Python Code]
+your python code
+\end{lstlisting}
+
+
+\section{}
 \end{document}
