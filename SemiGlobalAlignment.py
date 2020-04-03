@@ -116,7 +116,6 @@ def DP(query,subject,match = 1, mismatch = -1, indel = -1):
     
     
     
-    
              
     
     
@@ -124,19 +123,23 @@ def DP(query,subject,match = 1, mismatch = -1, indel = -1):
 if __name__ == "__main__":
     # run as python3 SemiGlobalAlignment.py -q ATT -s TTT
     try:
-        options, remainder = getopt.getopt(sys.argv[1:],'q:s:') # getopt usage refer to pymotw.com/3/getopt/
+        options, remainder = getopt.getopt(sys.argv[1:],'hq:s:',['help','q=','s=']) # getopt usage refer to pymotw.com/3/getopt/
     except getopt.GetoptError as err:
         print('ERROR:', err)
+        usage()
         sys.exit(1)
     for opt, arg in options:
-        if opt == '-q':
+        if opt in ('--q','-q'):
             query = arg
             print('Query sequence:', arg)
-        elif opt == '-s':
+        elif opt in ('--s','-s'):
             subject = arg
             print('Subjuct sequence:',arg)
+        elif opt in ('--help','-h'):
+            usage() # it doesn't work in getopt.getopt
+            sys.exit()  # default is zero, means "successful termination", 2 means command line errors abnormal termination, 1 means other abnormal termination
     
-   # DP('CTAGGTGATATA','ATATACTGG')
+    #DP('CTAGGTGATATA','ATATACTGG')
     DP(query,subject)
     
 
