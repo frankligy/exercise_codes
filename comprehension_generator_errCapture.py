@@ -22,7 +22,10 @@ sue = {'pay': 4000, 'job': 'hdw', 'age': 45, 'name': 'Sue Jones'}
 ​
 people = [bob, sue] 
 ​
-[rec['age']+100 if rec['age'] >= 45 else rec['age'] for rec in people] # 注意for位置 
+[rec['age']+100 if rec['age'] >= 45 else rec['age'] for rec in people] 
+
+# example 3
+[item for item in list_ if item >= 1]   # compare with example 2, depending on whether you have else condition.
 
 # [42, 145]
 
