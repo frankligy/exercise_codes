@@ -26,6 +26,7 @@ Created on Fri Mar  6 11:58:43 2020
 #    It can be used in re.sub and also even used in one pattern, (P|p)ython%\1erl will be either Python%Perl or python%perl
 # 10. greedy and non-greedy: default of .* are greedy, .*? will be confined to non-greedy
 # 11. use r'': but I don't really understand why
+# 12. metacharacters: . ^ $ * + ? {} [] \ | ()
 
 import re
 import regex # regex has some additional function, I will use its fuzzy matching
