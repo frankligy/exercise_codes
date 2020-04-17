@@ -31,10 +31,28 @@ echo $var
 echo ${var}   # line3 and line4 are the same, in case of confusion, line4 is recommended, they all mean the value of this variable
 echo $(echo $var)   # $() means execute the command in the parenthesis and will pass the internal output to the exteral command
 
+
+# bash arithmetic operation
+echo $((5+10))
+x=1
+y=2
+ans=$((x+y))
+ans=$[$a/$b]   # bash doesn't support float-point operation, awk does.
+
+
 # array
 my_array=(4 5 6)
 echo ${my_array}  # only return my_array[0], which is 4
 echo ${my_array[2]} # will return 6
+
+
+# aforementioned variables are only alive in this shell
+# solution to make them permanent is to use export 
+# then it will be saved in .bash_profile through which it will load automatically everytime you are logged into
+export PATH=/data/home/mjchen/app/package:$PATH   # this is also how to add path to environment 
+
+
+
 
 # while loop, in-line format and formal format
 cat list.txt | while read line; do echo $line; done

@@ -1,4 +1,4 @@
-# list comprehension
+###### list comprehension
 # example 1
 M = [[1,2,3],[4,5,6],[7,8,9]] 
 N = [[2,2,2],[3,3,3],[4,4,4]] 
@@ -27,45 +27,36 @@ people = [bob, sue]
 # example 3
 [item for item in list_ if item >= 1]   # compare with example 2, depending on whether you have else condition.
 
-# [42, 145]
+# example 4
+condition = True
+a = 1 if condition else 2    # just if statement
 
-# dict comprehension
+
+
+
+
+
+###### dict comprehension
 # example 1
 strings = ['import','is','with','if','file','exception']
 D = {key: val for val,key in enumerate(strings)} # enumerater types
 
-D
-
 # {'exception': 5, 'file': 4, 'if': 3, 'import': 0, 'is': 1, 'with': 2}
 
-# example 2
-mcase = {'a': 10, 'b': 34, 'A': 7, 'Z': 3}
 
-mcase_frequency = {
-    k.lower(): mcase.get(k.lower(), 0) + mcase.get(k.upper(), 0)
-    for k in mcase.keys()
-    if k.lower() in ['a','b']
-}
 
-print(mcase_frequency)
-#  Output: {'a': 17, 'b': 34}
-
-# set comprehension
+#### set comprehension
 strings = ['a','is','with','if','file','exception'] 
 
 {len(s) for s in strings}  # only retain the unique value
 # {1, 2, 4, 9}
 
 
-# generator
+#######  generator
 # method 1
-g = (x * x for x in range(10))
-g
-<generator object <genexpr> at 0x1022ef630>
-
+g = (x * x for x in range(10))   # g is a generator 
 next(g)
-for n in g:
-    print(n)
+
 
 # method 2
 def fib(max):
@@ -74,23 +65,8 @@ def fib(max):
         yield b  # same as print, but lead the function to a generator
         a, b = b, a + b
         n = n + 1
-    return 'done'
 
-f = fib(6)
-f
-<generator object fib at 0x104feaaa0>
 
-# capture errors
-
-def divide(x, y): 
-    try: 
-        # Floor Division : Gives only Fractional Part as Answer 
-        result = x // y 
-        print("Yeah ! Your answer is :", result) 
-    except ZeroDivisionError: 
-        print("Sorry ! You are dividing by zero ") 
-  
-# Look at parameters and note the working of Program 
-divide(3, 0) 
-
-# Sorry ! You are dividing by zero
+f = fib(6)      # <generator object fib at 0x104feaaa0>
+next(f)
+next(f)

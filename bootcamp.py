@@ -108,11 +108,262 @@ a linked table. In same sense, set is a hash table, it is faster to query one el
 '''
 
 
+#### file IO
+# modes: r -- read; w -- write(file no need to exist); a-- append(file no need to exist); b -- binary file 
+f = open('file3.txt','r',encoding = 'utf-8')  # f will be a TextIOWrapper type
+content = f.read()   # it will be a string with newline in between   (read all file in one go)
+f.close()
+
+with open('file3.txt','r',encoding = 'utf-8') as f1:   # f is still TextIOWrapper type
+    line1 = f1.readline()     # only read one line with newline   
+    line2 = f1.readline()
+    
+with open('file3.txt','r',encoding = 'utf-8') as f2:    
+    lines = f2.readlines()    # all the lines will be stored in a list, each item with trailing newline
+
+with open('file3.txt','r',encoding = 'utf-8') as f3:
+    for line in f3: print(line)
+    
+    
+# GUI programming ****** Don't run the following code, please   **********
+import tkinter   # come with python base installer, no need to pip again
+                 # other professional packages: wxPython、PyQt、PyGTK
 
 
+def main():
+    flag = True
+
+    # change the word in label
+    def change_label_text():
+        nonlocal flag   # indicate this variable's scope is belonging to an outer layer but not the global 
+        flag = not flag
+        color, msg = ('red', 'Hello, world!')\
+            if flag else ('blue', 'Goodbye, world!')
+        label.config(text=msg, fg=color)
+
+    # confirm exit
+    def confirm_to_quit():
+        if tkinter.messagebox.askokcancel('prompt', 'sure to quit'):
+            top.quit()
+
+    # generate top bar
+    top = tkinter.Tk()
+    # configure the size of the top bar
+    top.geometry('240x160')
+    # configure the title of top bar
+    top.title('example')
+    # the whole body
+    label = tkinter.Label(top, text='Hello, world!', font='Arial -32', fg='red')
+    label.pack(expand=1)
+    # a container for buttons
+    panel = tkinter.Frame(top)
+    # generate button object, assign to a container, bind with functions using command argument
+    button1 = tkinter.Button(panel, text='modify', command=change_label_text)
+    button1.pack(side='left')
+    button2 = tkinter.Button(panel, text='exit', command=confirm_to_quit)
+    button2.pack(side='right')
+    panel.pack(side='bottom')
+    # main loop
+    tkinter.mainloop()
 
 
+if __name__ == '__main__':
+    main()
 
 
+#### game development: pygame, panda3D
+# below snippet is not a complete code, it is representative of the mindset, how to capture the event, how to communicate 
+while running:
+        # obtain event from event queue and process that 
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        # obtain mousebuttondown event
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            # obtain mouse position
+            x, y = event.pos
+            radius = randint(10, 100)
+            sx, sy = randint(-10, 10), randint(-10, 10)
+            color = Color.random_color()
+            # instantiate a ball on the mouse position
+            ball = Ball(x, y, radius, sx, sy, color)
+  
 
+#### List, tuple, set
+# List
+a = [1,2,3,4,5,6]
+a.insert(1,8)  # insert 8, 8 will be the 1st element in the new list, which means insert 8 before second element
+a.pop(3)   # pop the third element
+a.remove(6)   # remove element 6
+a.clear()    # become a empty list
+
+# Tuple: useful in multi-thread programming since it is immutable, secure
+
+# set: 
+a = {1,2,3,4}
+a.add(5)   # add 5 to the set
+b = {3,4,5,6,7}
+a.update(b)   # add b to a and remove overlapped elements
+
+#### OOP
+#example1: leading double underscore
+class A:
+
+    def __init__(self, foo):
+        self.__foo = foo   # 
+
+    def __bar(self):
+        print(self.__foo)
+        print('__bar')
+
+
+test = A('hi')
+test.__foo     # AttributeError
+test._A__foo   # for __foo, __bar, if they are attribute or method in class, interpreter will do name mangling, will change
+               # __foo to _A__foo, __bar to _A__bar.
+
+#example2: @property
+class Person(object):
+
+    __slots__ = ('_name', '_age', '_gender')   # this class can only have these three attributes, can not add other attributes
+    
+    
+    def __init__(self, name, age):
+        self._name = name
+        self._age = age
+
+
+    @property      # it means, every time when we are trying to access the value of object.name, we are not gonna look up in __dict__, instead, we will trigger the below function
+    def name(self):
+        return self._name
+
+    @property
+    def age(self):
+        return self._age
+
+    @age.setter     # it means, every time when we are trying to assign a new velue to object.age, we are going to trigger the following function 
+    def age(self, age):
+        self._age = age
+
+    @staticmethod    # this method is belong to the class, not any instance of this class
+    def is_valid(a, b, c):
+        return a + b > c and b + c > a and a + c > b
+
+    @classmethod
+    def now(cls):
+        ctime = localtime(time())
+        return cls(ctime.tm_hour, ctime.tm_min, ctime.tm_sec)
+    
+
+
+#### process and thread
+# example1: multi-process in python
+from multiprocessing import Process
+from os import getpid
+from random import randint
+from time import time, sleep
+
+
+def download_task(filename):
+    print('Start downloading, pid is {0}.'.format(getpid()))
+    print('Start downloading {}...'.format(filename))
+    time_to_download = randint(5, 10)
+    sleep(time_to_download)
+    print('Finished the {0} downloading, consume {1} second'.format(filename, time_to_download))
+
+
+def main():
+    start = time()
+    p1 = Process(target=download_task, args=('file1.pdf',))
+    p1.start()
+    p2 = Process(target=download_task, args=('file2.pdf',))
+    p2.start()
+    p1.join()   # wait until p1 is finished
+    p2.join()
+    end = time()
+    print('Consume {} seconds in total'.format(end - start))
+
+
+if __name__ == '__main__':
+    main()
+
+
+# example2: multi-thread in python
+from random import randint
+from threading import Thread
+from time import time, sleep
+
+
+def download(filename):
+    print('Start to download {}'.format(filename))
+    time_to_download = randint(5, 10)
+    sleep(time_to_download)
+    print('{} has been downloaded, consume {} seconds'.format(filename, time_to_download))
+
+
+def main():
+    start = time()
+    t1 = Thread(target=download, args=('file1.pdf',))
+    t1.start()
+    t2 = Thread(target=download, args=('file2.pdf',))
+    t2.start()
+    t1.join()
+    t2.join()
+    end = time()
+    print('Consume {} seconds in total'.format(end - start))
+
+
+if __name__ == '__main__':
+    main()
+
+# example3: multi-thread with lock
+from time import sleep
+from threading import Thread, Lock
+
+
+class Account(object):
+
+    def __init__(self):
+        self._balance = 0
+        self._lock = Lock()  # there is gonna be a lock
+
+    def deposit(self, money):
+        self._lock.acquire()   # if the resource is available, current thread will proceed, acquire the key and re-lock the resource, so other thread can not access at this moment
+        try:
+            new_balance = self._balance + money
+            sleep(0.01)
+            self._balance = new_balance
+        finally:
+            self._lock.release()   # open the lock, so the resource is avilable now, next thread could enter
+
+    @property
+    def balance(self):
+        return self._balance
+
+
+class AddMoneyThread(Thread):
+
+    def __init__(self, account, money):
+        super().__init__()
+        self._account = account
+        self._money = money
+
+    def run(self):
+        self._account.deposit(self._money)
+
+
+def main():
+    account = Account()
+    threads = []
+    for _ in range(100):
+        t = AddMoneyThread(account, 1)
+        threads.append(t)
+        t.start()
+    for t in threads:
+        t.join()
+    print('balance is: $%d' % account.balance)
+
+
+if __name__ == '__main__':
+    main()
 

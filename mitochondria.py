@@ -147,6 +147,25 @@ def apply_filtering_for_ORF(ORFs):
                 dict[ORF] = score_coding_bias(ORF)
     return dict
 
+
+def fileIO(intPath,outPath):     # remove the newline fasta file
+    with open(intPath,'r') as f1, open(outPath,'w') as f2:
+        sequence = []
+        for line in f1:
+            if line.startswith('>'): 
+                if sequence: 
+                    seq = ''.join(sequence) + '\n'
+                    f2.write(seq)
+                    f2.write(line)
+                    sequence = []
+                else: f2.write(line)
+            else:
+                sequence.append(line.rstrip('\n'))
+        
+                
+
+    
+
 if __name__ == "__main__":
     # please change the following path
     mito_fasta = read_mito_dna('/Users/ligk2e/Desktop/gene_finding/Homo_sapiens.GRCh38.dna.chromosome.MT.fa')

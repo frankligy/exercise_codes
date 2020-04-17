@@ -13,6 +13,10 @@ Created on Fri Mar  6 11:58:43 2020
 # 2. Python RegEx
 # 3. A snapshot in my onedrive (learning linux from now)
 
+# we are using raw string, r'', meaning, there is no escape character \, it is quite confusing. So in a standard string,
+# \ is an escape character, a leading \ will make the following letter has special meaning, like \n, \t. So in raw string, 
+# \ is just \. However, in regular expression, raw string '\' is used to escape. Try to understand this logic.
+
 # Summary of regular expression:
 # 1. ordinary pattern
 # 2. metacharacter, use \ to escape if you wanna their liternal meaning
@@ -25,19 +29,27 @@ Created on Fri Mar  6 11:58:43 2020
 # 9. Grouping in conjunction with back reference ()()  ->> \1 refer to the first paranthesis, \2 refer to the second, 
 #    It can be used in re.sub and also even used in one pattern, (P|p)ython%\1erl will be either Python%Perl or python%perl
 # 10. greedy and non-greedy: default of .* are greedy, .*? will be confined to non-greedy
-# 11. use r'': but I don't really understand why
+# 11. (?=exp): match portion before exp; (?<=exp): match portion after exp
 # 12. metacharacters: . ^ $ * + ? {} [] \ | ()
 
 import re
 import regex # regex has some additional function, I will use its fuzzy matching
+
+text = 'I\'m dancing'
+re.search(r'\b\w+(ing)',text).group(1)   # the match is dancing, return 'ing' since we specifying subgroup1
+re.search(r'\b\w+(?=ing)',text)          # the match will be danc
 
 # re:
 # 1. re.match or re.search, match can only happen if at the beginning of the string. re.match().group(), groups() will return all the 
 #    subgroups, not all matches, match function and search function can only return the first occurence. group(1) return first subgroup
 #    span will return the (start,end) in a tuple. Matchobj and Searchobj cound be used as condition in IF command
 # 2. re.findall() could return all matches in a list
-# 3. re.finditer() could return all index information
-# 4. re.split and other command
+# 3. re.finditer() could return all index information, it is a iterator
+# 4. split, sub function
+# 5. re.fullmatch()
+# 6. re.complile()
+# 7. in each method, there is an optional argument called flags, flags=re.I(ignore case), flags = re.M(multiple line matching)
+
 
 # regex:
 
