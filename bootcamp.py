@@ -86,7 +86,8 @@ print(next(f))
 a = [1,2,3]
 a1 = iter(a)
 
-
+# advanced usage
+items1 = list(map(lambda x: x ** 2, filter(lambda x: x % 2, range(1, 10))))
 
 #### Collections Module
 '''
@@ -254,9 +255,44 @@ class Person(object):
         ctime = localtime(time())
         return cls(ctime.tm_hour, ctime.tm_min, ctime.tm_sec)
     
+# example3: abstract class, abstract can not be instantiated, it can only be inherited
+from abc import ABCMeta, abstractmethod
 
 
-#### process and thread
+class Pet(object, metaclass=ABCMeta):
+
+
+    def __init__(self, nickname):
+        self._nickname = nickname
+
+    @abstractmethod
+    def make_voice(self):
+        pass
+
+
+class Dog(Pet):
+
+    def make_voice(self):
+        print('%s: wong...' % self._nickname)
+
+
+class Cat(Pet):
+
+
+    def make_voice(self):
+        print('%s: miao...' % self._nickname)
+
+
+# example4: how to add magic method to a class
+# meaning, we all know that a class'method could be implemented by A.method1(), A.method2()
+# then, is it possible to define the method like slicing A[4,5], with A as f:, those non-standard behavior are handley in class definitin
+# for instance, wanna accomplist slicing, you should define __getitem__(self,key) method, it will be called when you try to do A[3,4]
+# a full list could be found in my onedrive: learning python from now
+        
+        
+        
+
+#### process and thread, asyschronous I/O
 # example1: multi-process in python
 from multiprocessing import Process
 from os import getpid
@@ -366,4 +402,64 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+#### Heap sort, stack and queue
+# heap sort: an efficient sorting algorithm using heap data strcture
+import heapq
+
+list1 = [34, 25, 12, 99, 87, 63, 58, 78, 88, 92]
+
+print(heapq.nlargest(3, list1))
+print(heapq.nsmallest(3, list1))
+
+
+# Stack and queue
+# they are abstarct data structure, describing a concept
+# Stack: Last-in-First-Out
+# Queue: Fisrt-in-First-Out
+
+# A simple class stack that only allows pop and push operations
+class Stack:
+
+    def __init__(self):
+        self.stack = []
+
+    def pop(self):
+        if len(self.stack) < 1:
+            return None
+        return self.stack.pop()
+
+    def push(self, item):
+        self.stack.append(item)
+
+    def size(self):
+        return len(self.stack)
+
+# And a queue that only has enqueue and dequeue operations
+class Queue:
+
+    def __init__(self):
+        self.queue = []
+
+    def enqueue(self, item):
+        self.queue.append(item)
+
+    def dequeue(self):
+        if len(self.queue) < 1:
+            return None
+        return self.queue.pop(0)
+
+    def size(self):
+        return len(self.queue) 
+
+
+
+
+
+
+
+
+
+
+
 

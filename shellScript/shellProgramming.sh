@@ -107,6 +107,7 @@ awk 'BEGIN {OFS="\t";F=[:-"\t"];}
 # sed could perform all kinds of substitution in each line
 sed 's/unix/linux/g;s/1/2/g' file       # consecutive substitution
 
+
 # interact with input
 grep ${1} mRNA-ExonIDs.txt > mannual.txt    # ${1} menans first argument
 
