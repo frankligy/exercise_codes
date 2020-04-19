@@ -88,6 +88,7 @@ a1 = iter(a)
 
 # advanced usage
 items1 = list(map(lambda x: x ** 2, filter(lambda x: x % 2, range(1, 10))))
+colors = list(map(lambda x:x%2,[random.randint(0,200) for i in range(200)]))
 
 #### Collections Module
 '''
@@ -209,11 +210,12 @@ a.update(b)   # add b to a and remove overlapped elements
 #### OOP
 #example1: leading double underscore
 class A:
+    __tt = 'd'    # when create the classA, name mangling will happen
 
     def __init__(self, foo):
-        self.__foo = foo   # 
+        self.__foo = foo   # after instantiate the object, name mangling will happen
 
-    def __bar(self):
+    def __bar(self):    # when create the class A, name mangling will happen
         print(self.__foo)
         print('__bar')
 
@@ -289,7 +291,17 @@ class Cat(Pet):
 # for instance, wanna accomplist slicing, you should define __getitem__(self,key) method, it will be called when you try to do A[3,4]
 # a full list could be found in my onedrive: learning python from now
         
-        
+# example5: singleton, __new__ method
+class Singleton(object):
+    instance = None
+
+    def __new__(cls,age,name):
+        if not cls.instance:
+            cls.instance = object.__new__(cls)
+            return cls.instance
+
+a = Singleton(18,'John')
+b = Singleton(48,'Tom')
         
 
 #### process and thread, asyschronous I/O
@@ -453,11 +465,25 @@ class Queue:
         return len(self.queue) 
 
 
+#### sorting
+#example1: operate on list, sorted has return value, sort doesn't have
+s = ['ab','abc','a','djkj']
+b = sorted(s,key=lambda x: len(x),reverse = True)
+s.sort(key=len)
 
 
+# example2: sort based on key of a dict
+dic = {'name':'zs','sex':'man','city':'bj'}
+foo = zip(dic.keys(),dic.values())   # zip object, iterator, each is a tuple ('name','zs'), ('sex','man')
+foo = [i for i in foo]
+b = sorted(foo,key=lambda x: x[0])
+new_dic = {i[0]:i[1] for i in b}
 
 
-
+# example3: lambda function with condition
+foo = [-5,8,0,4,9,-4,-20,-2,8,2,-4]
+a = sorted(foo,key=lambda x: (x<0,abs(x)))   # first sort by boolean value, then abs value for negative number
+                                             # lambda function return a function object, this example, it returns(True,value)
 
 
 

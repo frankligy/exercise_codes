@@ -31,7 +31,8 @@ people = [bob, sue]
 condition = True
 a = 1 if condition else 2    # just if statement
 
-
+# example 5
+dicNode = {node:cluster for cluster,nodes in enumerate(clusters) for node in nodes}
 
 
 
