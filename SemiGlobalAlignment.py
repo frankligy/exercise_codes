@@ -115,7 +115,15 @@ def DP(query,subject,match = 1, mismatch = -1, indel = -1):
    
     
     
-    
+def usage():
+    print('Usage:')
+    print('python3 SemiGlobalAlignment.py -q query_sequence -s subject_sequence')
+    print('Options:')
+    print('-q --query : your query sequence')
+    print('-s --subject: your subjuct sequence')
+    print('-h --help: check help information ')
+    print('Author: Guangyuan(Frank) Li <li2g2@mail.uc.edu>, PhD Student, University of Cincinnati, 2020')
+        
              
     
     
@@ -123,16 +131,16 @@ def DP(query,subject,match = 1, mismatch = -1, indel = -1):
 if __name__ == "__main__":
     # run as python3 SemiGlobalAlignment.py -q ATT -s TTT
     try:
-        options, remainder = getopt.getopt(sys.argv[1:],'hq:s:',['help','q=','s=']) # getopt usage refer to pymotw.com/3/getopt/
+        options, remainder = getopt.getopt(sys.argv[1:],'hq:s:',['help','query=','subject=']) # getopt usage refer to pymotw.com/3/getopt/
     except getopt.GetoptError as err:
         print('ERROR:', err)
         usage()
         sys.exit(1)
     for opt, arg in options:
-        if opt in ('--q','-q'):
+        if opt in ('--query','-q'):
             query = arg
             print('Query sequence:', arg)
-        elif opt in ('--s','-s'):
+        elif opt in ('--subject','-s'):
             subject = arg
             print('Subjuct sequence:',arg)
         elif opt in ('--help','-h'):

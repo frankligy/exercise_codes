@@ -12,6 +12,16 @@ from scipy.sparse import isspmatrix,csr_matrix,csc_matrix,dok_matrix
 a = np.array([[3,4,5],[5,6,7]])    # numpy.ndarray
 a1 = np.matrix([[3,6,5],[9,6,7]])   # numpy.matrix
 
+d = np.array([1,2,3,4])
+d.shape   # (4,) this is a column vector, 1-d array
+d1 = d.reshape(1,-1)
+d1.shape   # (1,4) this is a row vector, 2-d array
+d2 = d1.reshape(-1,1)
+d2.shape   # (4,1) this is a column vector again, 2-d array
+e = np.array([1])
+e.shape    # 1-d array as well
+
+
 # in julia, we specify column vector and row vector, [1 2 3 4] means row vector, [1,2,3,4] means column vector
 # [1 2 3 4; 5,6,7,8] means a matrix 2*4
 
