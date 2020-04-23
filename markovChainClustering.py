@@ -53,6 +53,7 @@ def iteration(matrix,times,powerExpand,powerInflate):
         matrix = matrix ** powerExpand
         # inflation
         matrix = normalize(matrix.power(powerInflate))
+        matrix = pruned(matrix,0.001)
         condition = matrixConverge(matrix,lastMatrix)    # True means has converged
         if condition: break
     return matrix
@@ -64,6 +65,20 @@ def matrixConverge(matrix1,matrix2,rtol=1e-5,atol=1e-8):
     c = np.abs(matrix1-matrix2) - rtol*np.abs(matrix2)
     return c.max() <= atol
     
+
+def pruned(matrix,threshold):   # assume we are feeding a csc matrix
+    # if value < threshold, then set them to zero
+    prune = dok_matrix(matrix.shape)
+    prune[matrix >= threshold] = matrix[matrix >= threshold]
+    prune.tocsc()
+    # keep the max value in each column
+    num_cols = matrix.shape[1]
+    row_indices = matrix.argmax(axis=0).reshape(num_cols,)
+    column_indices = np.arange(num_cols)
+    prune[row_indices,column_indices] = matrix[row_indices,column_indices]
+    return prune
+
+
 
 
 def getCluster(matrix):
@@ -103,31 +118,7 @@ def roundMatrix(matrix):     # 2d ndarray
     return matrix
     
     
-def get_clusters(matrix):
-    """
-    Retrieve the clusters from the matrix
-    
-    :param matrix: The matrix produced by the MCL algorithm
-    :returns: A list of tuples where each tuple represents a cluster and
-              contains the indices of the nodes belonging to the cluster
-    """
-    if not isspmatrix(matrix):
-        # cast to sparse so that we don't need to handle different 
-        # matrix types
-        matrix = csc_matrix(matrix)
 
-    # get the attractors - non-zero elements of the matrix diagonal
-    attractors = matrix.diagonal().nonzero()[0]
-
-    # somewhere to put the clusters
-    clusters = set()
-
-    # the nodes in the same row as each attractor form a cluster
-    for attractor in attractors:
-        cluster = tuple(matrix.getrow(attractor).nonzero()[1].tolist())
-        clusters.add(cluster)
-
-    return sorted(list(clusters))
 
 
 
@@ -143,24 +134,22 @@ if __name__ == '__main__':
     adjacency = csc_matrix(adjacency)    # csc object
     adjacencySelfLoop = addSelfLoop(adjacency,1)
     adjLoopNorm = normalize(adjacencySelfLoop)
-    adjFinal = iteration(adjLoopNorm,10,2,2.1)
-    
-    
-    
-    
-    
+    adjFinal = iteration(adjLoopNorm,10,2,2.1)    
     adjArray = roundMatrix(adjFinal.toarray())
-    clusters = get_clusters(adjFinal) 
-    visualization(adjacency,clusters,1.1) 
+    print('The adjacency matrix is as below:(inflation=2.1)')
+    print('---------------------------------------------------')
+    print(adjArray)
+    clusters = getCluster(adjFinal) 
+    visualization(adjacency,clusters,2.1) 
 
 
 
-
-    import markov_clustering as mc
-    import networkx as nx
-    import random
-    result = mc.run_mcl(adjacency,inflation=2.1,iterations=10,expansion=2)           # run MCL with default parameters
-    clusters = mc.get_clusters(result)    # get clusters
+#
+#    import markov_clustering as mc
+#    import networkx as nx
+#    import random
+#    result = mc.run_mcl(adjacency,inflation=2.1,iterations=10,expansion=2)           # run MCL with default parameters
+#    clusters = mc.get_clusters(result)    # get clusters
 
 
 
