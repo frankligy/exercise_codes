@@ -84,6 +84,49 @@ class KNNmachine():
         self.X1 = X1
         self.Y1 = Y1
         self.testingData = testingData
+        
+    def bruteForce(self,k):
+        finalResult = []
+        for eachProtein in self.testingData:
+            window = len(eachProtein)
+            stat = []
+            for eachWindow in eachProtein:
+                temp = np.array(eachWindow[0])
+                #print(k)
+                prediction = KNNmachine.distance(self.X1,self.Y1,temp,k)  # deploy instance function
+                stat.append(1) if prediction == eachWindow[1] else stat.append(0)
+            from functools import reduce
+            percentage = reduce(lambda a,b:a+b,stat)/window
+            finalResult.append(round(percentage,2))
+        self.prediction = finalResult   #[80%,45%,34%,98%...]
+        from statistics import mean
+        print(finalResult)
+        print('This round yield {0} average accuracy'.format(mean(finalResult)))
+            
+                
+                
+                
+    @staticmethod            
+    def distance(X1,Y1,temp,k):   # hamming distance between a testing point and a training point
+        from scipy.spatial.distance import hamming
+        allDist = []
+        for i in range(len(Y1)):
+            ref = X1[i,:]
+            dist = hamming(ref,temp)  # hamming function only accept 1D array
+            allDist.append(dist)
+        '''
+        Y1:        0,1,0,0,2,0....
+        allDist:   4,5,3,5,........   (distance)
+        take the maximum k number neighbors
+        '''
+        kNneighbors =  sorted(zip(allDist,Y1),key=lambda x:x[0],reverse=True)[:k]
+        labels = [neighbor[1] for neighbor in kNneighbors]
+        from collections import Counter
+        count = Counter(labels)  # [0,1,1,2,2,2,1,1] will be {0:1,1:4,2:3}
+        prediction = max(count,key=lambda x:count[x])  # smart solution
+        return prediction
+            
+            
     
     def constructModel(self,k,mode='distance'):  # mode = 'uniform' so don't account for distance
         from sklearn.neighbors import KNeighborsClassifier
@@ -93,13 +136,13 @@ class KNNmachine():
        
     
     def predict(self):  #[   [   ([],0)  ,  ([],1)   ],[],[]]
-        testing = len(testingData)   # how many protein in testing set
+        testing = len(self.testingData)   # how many protein in testing set
         finalResult = []
-        for eachProtein in testingData:   # [  (  [],0     ),(),()   ]
+        for eachProtein in self.testingData:   # [  (  [],0     ),(),()   ]
             window = len(eachProtein)   # how many windows in a protein
             stat = []
             for eachWindow in eachProtein:   # (   [],0  )
-                temp = np.array(eachWindow[0]).reshape(1,-1)   # from column vector to row vector
+                temp = np.array(eachWindow[0]).reshape(1,-1)   # from i-d array to 1*n 2d row vector
                 #print(temp.shape)
                 prediction = list(self.clf.predict(temp))[0]
                 #print(prediction,type(prediction))
@@ -160,11 +203,11 @@ if __name__ == '__main__':
         training,testing = ProteinFamily.kFoldSplit(familyInfoNew,i)
         for item in training:
             member = ProteinFamily(item[0],item[1],item[2])
-            result = member.ambientOneHotEncoding(11)
+            result = member.ambientOneHotEncoding(5)
             trainingData.extend(result)    #[([],0),([],1)...]
         for item in testing:
             member = ProteinFamily(item[0],item[1],item[2])
-            result = member.ambientOneHotEncoding(11)
+            result = member.ambientOneHotEncoding(5)
             testingData.append(result)    # for testing set, I preserve where each sliding window comes from
         X1,Y1= [],[]
         for j in trainingData:
@@ -173,8 +216,8 @@ if __name__ == '__main__':
         X1,Y1 = np.array(X1),np.array(Y1)  # [[0,0,0,1,0,0,1,....],[0,1,0,1,0,0,0,...]], [0,1,2,1,2,1,...]
         #print(X1,Y1,type(X1),type(Y1),X1.shape,Y1.shape)
         machine = KNNmachine(X1,Y1,testingData)
-        machine.constructModel(15)
-        machine.predict()
+        machine.constructModel(3)
+        machine.bruteForce(3)
         
             
     

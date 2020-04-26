@@ -486,6 +486,9 @@ a = sorted(foo,key=lambda x: (x<0,abs(x)))   # first sort by boolean value, then
                                              # lambda function return a function object, this example, it returns(True,value)
 
 
-
+# example4: max function also has key argument, and see how max could return the key which has largest value
+count = {'a':100,'b':3000,'d':3000,'e':67}
+maxKey = max(count,key=lambda x:count[x])
+maxTogether = max(count.items(),key=lambda x: count[x])
 
 

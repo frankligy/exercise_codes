@@ -2,6 +2,7 @@
 s <- list(name="DataFlair",age=29,GPA=4.0)
 class(s) <- "student"
 
+s$age  # how to access S3 object's attribute
 
 getGPA <- function(obj){
   UseMethod("getGPA")
@@ -29,6 +30,8 @@ is.object(a)
 isS4(a)
 slotNames(a)
 slot(a,"location") <- c(1,5)
+
+a@location  # how to access S4 object's attribute
 
 setGeneric("getLocation",function(object){
   standardGeneric("getLocation")

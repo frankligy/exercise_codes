@@ -30,7 +30,22 @@ var="test"    # no space is allowd !!!!!
 echo $var   
 echo ${var}   # line3 and line4 are the same, in case of confusion, line4 is recommended, they all mean the value of this variable
 echo $(echo $var)   # $() means execute the command in the parenthesis and will pass the internal output to the exteral command
+echo `echo $var`    # equivalent to above command
 
+# in-line arguments, 
+$1, $2 .... ${10}
+$*  # all the arguments were viewed as a whole, for i in "$*" , i will be the whole
+$@ # all the arguments were viewed as individual, for i in "$@", i will be each argument
+$#   # the number of arguments
+
+# special character
+$$ # current PID
+$! # last process's PID in backend
+$? # the result of last process, will be 0 if executed correctly, will be non-zero if not
+
+# all the varibales
+set  # display all the variables
+unset var # delete variable
 
 # bash arithmetic operation
 echo $((5+10))
@@ -38,6 +53,7 @@ x=1
 y=2
 ans=$((x+y))
 ans=$[$a/$b]   # bash doesn't support float-point operation, awk does.
+temp=`expr 2 \* 3`   # \* means multiply, / means divide, % means take remainder
 
 
 # array
@@ -50,6 +66,7 @@ echo ${my_array[2]} # will return 6
 # solution to make them permanent is to use export 
 # then it will be saved in .bash_profile through which it will load automatically everytime you are logged into
 export PATH=/data/home/mjchen/app/package:$PATH   # this is also how to add path to environment 
+source path   # activate the configuration file that we just made change to
 
 
 
@@ -61,9 +78,25 @@ do
 echo $line
 done
 
+SUM=0
+i=0
+while [ $i -le $1]
+do
+	SUM=$[$SUM+$i]
+	i=$[$i+1]
+done
+echo $SUM
+
 # for loop, in-line format and formal format is the same as above
 for i in ./srafiles/*; do echo $i; done    
 for i in {1..500}
+
+SUM=0
+for ((i=1;i<=100;i++))
+do 
+	SUM=$[$SUM+$i]
+done
+echo $SUM
 
 
 # different way to traverse files
@@ -120,13 +153,58 @@ awk -v awk_pos=$pos 'BEGIN{print "The matched one is"}    # pass the shell varia
 END{print "See aboved"}' mannual.txt
 
 # if condition
+# example 1:
 if [ $another != 0 ]
 then
     grep $another mRNA-ExonIDs.txt > mannual1.txt
     grep $another Hs_Ensembl_exon.txt > exonlist1.txt
-else
+elif []
+then
     echo "OK,that's it"
+else
+then
+	echo "Hi"
 fi
+
+# example2:
+if [5 -gt 10]   # -ge, -lt, -le
+then
+	echo "Hi"
+fi
+
+# example3
+if [-e /root/shell/a.txt]   # if exist this file   # && means and, || means or
+then
+	echo "Hi"
+fi
+
+# example 4
+case $1 in
+"1")
+echo "Monday"
+;;
+"2")
+echo "Tuesday"
+;;
+esac
+
+
+# function
+
+# built-in
+basename include/stdio.h .h   # will return stdio, since here we specify the suffix, which will be trimmed off
+dirname /usr/bin/    # will delete all content after last /, include / itself, if no /, then return '.' current path
+
+# customized 
+function getSum(){
+		SUM=$[$n1+$n2]
+		echo "sum=$SUM"
+}
+
+read -p "please type in first parameter n1: " n1
+read -p "please type in second parameter n2 " n2
+
+getSum $n1 $n2
 
 
 # conda
