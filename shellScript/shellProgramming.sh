@@ -22,13 +22,16 @@ export CLICOLOR=1​
 export LSCOLORS=GxFxCxDxBxegedabagaced
 
 
+# shebang to specify the which shell to use
+cat /etc/shells  # will output all available shells
 
-
+# if one line is too long, use \ to newline, there is a space before \
 
 # variable, the scope of a varibale is the shell in which the variable get defined
 var="test"    # no space is allowd !!!!!
 echo $var   
 echo ${var}   # line3 and line4 are the same, in case of confusion, line4 is recommended, they all mean the value of this variable
+echo "$var"   # this is a better practice to use double quotation
 echo $(echo $var)   # $() means execute the command in the parenthesis and will pass the internal output to the exteral command
 echo `echo $var`    # equivalent to above command
 
@@ -66,18 +69,20 @@ echo ${my_array[2]} # will return 6
 # solution to make them permanent is to use export 
 # then it will be saved in .bash_profile through which it will load automatically everytime you are logged into
 export PATH=/data/home/mjchen/app/package:$PATH   # this is also how to add path to environment 
-source path   # activate the configuration file that we just made change to
+source /etc/profile   # activate the configuration file that we just made change to
 
 
 
 
 # while loop, in-line format and formal format
+# example1
 cat list.txt | while read line; do echo $line; done
 cat list.txt | while read line
 do
 echo $line
 done
 
+# example2
 SUM=0
 i=0
 while [ $i -le $1]
@@ -87,16 +92,29 @@ do
 done
 echo $SUM
 
+# example3: until
+ans="yes"
+until [ $ans != "yes"]; do echo "Hi"; done
+
+
+
+
+
 # for loop, in-line format and formal format is the same as above
+# example 1
 for i in ./srafiles/*; do echo $i; done    
 for i in {1..500}
 
+# example 2
 SUM=0
 for ((i=1;i<=100;i++))
 do 
 	SUM=$[$SUM+$i]
 done
 echo $SUM
+
+# example 3
+for i in {5..15..3}; do echo $i; done    # seems doesn't work
 
 
 # different way to traverse files
@@ -106,6 +124,9 @@ for i in ./srafiles              # will return the file name of every file in th
 # backend
 nohup echo "go to the backend"    # will throw the command to backend, stout will be appending into nohup.out
 ps -es  # check all the processes
+# then using PID
+cd /proc/PID/fd 
+ls -l    # will display the process's stdin, stdout, stderr, and their designated destination.
 
 # sub-shell 
 cat list.txt | while read line; do echo $line &;done  # amperand will throw each line into a sub-shell
@@ -152,7 +173,7 @@ awk -v awk_pos=$pos 'BEGIN{print "The matched one is"}    # pass the shell varia
 {if (NR==awk_pos) print NR,$1,$2,$3,$4}
 END{print "See aboved"}' mannual.txt
 
-# if condition
+# if condition   :    a space is required after [ and before ]
 # example 1:
 if [ $another != 0 ]
 then
@@ -162,31 +183,37 @@ elif []
 then
     echo "OK,that's it"
 else
-then
 	echo "Hi"
 fi
 
 # example2:
-if [5 -gt 10]   # -ge, -lt, -le
+if [ 5 -gt 10 -o 10 -gt 4 ]   # -ge, -lt, -le      # -o means or, -a means and, ! means negation
 then
 	echo "Hi"
 fi
 
 # example3
-if [-e /root/shell/a.txt]   # if exist this file   # && means and, || means or
+if [ -e /root/shell/a.txt ] || [10 -gt 5]   # if exist this file   # && means and, || means or
 then
 	echo "Hi"
 fi
 
 # example 4
 case $1 in
-"1")
-echo "Monday"
-;;
-"2")
-echo "Tuesday"
-;;
+	"1")
+	echo "Monday"
+	;;
+	"2")
+	echo "Tuesday"
+	;;
 esac
+
+# example 5
+if [ -z "$str1" ]     # whether it is empty string
+if [ -n "$str2" ]     # whether it is not empty string
+if [ "$str1" = "$str2" ]
+if [ "$str1" != "$str2" ]
+if [ "$str1" =~ "str2" ]      # seems doesn't work 
 
 
 # function
@@ -196,9 +223,12 @@ basename include/stdio.h .h   # will return stdio, since here we specify the suf
 dirname /usr/bin/    # will delete all content after last /, include / itself, if no /, then return '.' current path
 
 # customized 
+# in shell, every variable will be viewed as global variable unless you use local to declare in your function scope
 function getSum(){
+		local var="hi"
 		SUM=$[$n1+$n2]
 		echo "sum=$SUM"
+		return 0     # return just used to denote whether this function is successfully executed or not
 }
 
 read -p "please type in first parameter n1: " n1
@@ -206,6 +236,8 @@ read -p "please type in second parameter n2 " n2
 
 getSum $n1 $n2
 
+# log file
+./test.sh > log.dat 2>&1    # 0 means stdin, 1 means stdout, 2 means stderr, it means direct stderr to log.dat as well.
 
 # conda
 module load anaconda3   # only on cluster

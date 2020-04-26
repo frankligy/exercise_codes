@@ -57,9 +57,16 @@ rownames()
 length()
 
 # R script, take arguments
+# Rscript whatever.R 1 2 3 4 5 6 7
+# args[1] will be "1"
 args<- commandArgs(trailingOnly=TRUE)
-path <- args[1]
-name <- args[2]
+filename <- args[1]
+removeCC <- as.logical(as.numeric(args[2]))
+rhop <- as.numeric(args[3])
+centroid <- as.logical(as.numeric(args[4]))
+num_doubs <- as.numeric(args[5])
+only50 <- as.logical(as.numeric(args[6]))
+min_uniq <- as.numeric(args[7])
 
 # RDS file is to sava a single object
 save(pbmc,file="")
