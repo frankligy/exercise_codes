@@ -28,6 +28,7 @@ cat /etc/shells  # will output all available shells
 # if one line is too long, use \ to newline, there is a space before \
 
 # variable, the scope of a varibale is the shell in which the variable get defined
+# the data type: file, line, numeric, string, array
 var="test"    # no space is allowd !!!!!
 echo $var   
 echo ${var}   # line3 and line4 are the same, in case of confusion, line4 is recommended, they all mean the value of this variable
@@ -61,8 +62,16 @@ temp=`expr 2 \* 3`   # \* means multiply, / means divide, % means take remainder
 
 # array
 my_array=(4 5 6)
-echo ${my_array}  # only return my_array[0], which is 4
+echo ${my_array}  # only return the my_array[0], just 4
 echo ${my_array[2]} # will return 6
+my_array[2]=7   # change the value
+my_array[3]=8   # add new value
+unset my_array[2]  # then the array will be (4 5 NULL 8)
+
+# string
+x="pattern"
+echo ${#x}  # return the length of string
+echo ${x:2:5}  # slicing the string
 
 
 # aforementioned variables are only alive in this shell
@@ -193,6 +202,7 @@ then
 fi
 
 # example3
+# [ -f file ] means if it is a file ; [ -d file ] means if the file is a folder; [ -s file ] will be true when file exist and it is not empty.
 if [ -e /root/shell/a.txt ] || [10 -gt 5]   # if exist this file   # && means and, || means or
 then
 	echo "Hi"
@@ -213,7 +223,7 @@ if [ -z "$str1" ]     # whether it is empty string
 if [ -n "$str2" ]     # whether it is not empty string
 if [ "$str1" = "$str2" ]
 if [ "$str1" != "$str2" ]
-if [ "$str1" =~ "str2" ]      # seems doesn't work 
+if [[ "$str1" =~ "str2" ]]      
 
 
 # function

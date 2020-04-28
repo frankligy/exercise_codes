@@ -91,8 +91,10 @@ b1 = as.character(b)
 b2 = as.numeric(b1)
 
 
-
-
+# working with date
+ori <- "2018-09-06 09:00:00"
+date <- strsplit(ori," ")[[1]][1]  # date: "2018-09-06"
+new <- format(as.Date(date),'%m/%d/%Y')
 
 
 

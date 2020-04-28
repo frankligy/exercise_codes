@@ -492,3 +492,17 @@ maxKey = max(count,key=lambda x:count[x])
 maxTogether = max(count.items(),key=lambda x: count[x])
 
 
+
+#### *args **kwargs
+def myFun(*args):  
+    for arg in args:  
+        print (arg) 
+    
+myFun('Hello', 'Welcome', 'to', 'GeeksforGeeks') 
+
+
+def myFun(**kwargs):  
+    for key, value in kwargs.items(): 
+        print ("{0} == {1}".format(key,value)) 
+  
+myFun(first ='Geeks', mid ='for', last='Geeks')  

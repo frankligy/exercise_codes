@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/Users/ligk2e/opt/anaconda3/envs/python3/bin/python3
 # -*- coding: utf-8 -*-
 """
 Created on Tue Apr 21 18:14:10 2020
@@ -156,6 +156,7 @@ class KNNmachine():
         from statistics import mean
         print(finalResult)
         print('This round yield {0} average accuracy'.format(mean(finalResult)))
+        return finalResult
         
 
     @staticmethod
@@ -184,30 +185,18 @@ class KNNmachine():
             
         
             
-            
-                
-
-        
-            
-        
-        
-
-
-
-
-
-if __name__ == '__main__':
-    familyInfoNew = ProteinFamily.parseFile('/Users/ligk2e/Desktop/ssprotein/sec_stru_benchmark_sable135.txt')
+def main(length,k,mode='kdTree',vote='distance'):  
+    accuracyCollect = []          
     for i in range(5):
         trainingData,testingData = [],[]
         training,testing = ProteinFamily.kFoldSplit(familyInfoNew,i)
         for item in training:
             member = ProteinFamily(item[0],item[1],item[2])
-            result = member.ambientOneHotEncoding(5)
+            result = member.ambientOneHotEncoding(length)
             trainingData.extend(result)    #[([],0),([],1)...]
         for item in testing:
             member = ProteinFamily(item[0],item[1],item[2])
-            result = member.ambientOneHotEncoding(5)
+            result = member.ambientOneHotEncoding(length)
             testingData.append(result)    # for testing set, I preserve where each sliding window comes from
         X1,Y1= [],[]
         for j in trainingData:
@@ -216,10 +205,145 @@ if __name__ == '__main__':
         X1,Y1 = np.array(X1),np.array(Y1)  # [[0,0,0,1,0,0,1,....],[0,1,0,1,0,0,0,...]], [0,1,2,1,2,1,...]
         #print(X1,Y1,type(X1),type(Y1),X1.shape,Y1.shape)
         machine = KNNmachine(X1,Y1,testingData)
-        machine.constructModel(3)
-        machine.bruteForce(3)
+        
+        if mode == "bruteForce": machine.bruteForce(k)
+        elif mode == "kdTree": 
+            machine.constructModel(k,vote)
+            accuracy = machine.predict()  
+            accuracyCollect.extend(accuracy)
+    return accuracyCollect
+
+        
+def usage():
+    print('Usage:')
+    print('python3 protein_secondary_structure_predictor.py -l 5 -k 3 -m kdTree -v distance')
+    print('Options:')
+    print('-l --length : length of sliding window, you could pick 5,7,9,11')
+    print('-k --k: K nearest neighbors, increasing k will result in longer runtime')
+    print('-m --mode: bruteForce or kdTree, it is discouraged to use bruteForce')
+    print('-v --vote: distance will use distance-weighted measure when assigning label to each testing point, uniform will not consider that')
+    print('-h --help: check help information ')
+    print('Author: Guangyuan(Frank) Li <li2g2@mail.uc.edu>, PhD Student, University of Cincinnati, 2020')            
+        
+        
+def confidenceInterval(lis):
+    import numpy as np, scipy.stats as st
+    a = np.array(lis)
+    me = np.mean(a)
+    confInt = st.t.interval(0.95, len(a)-1, loc=me, scale=st.sem(a))  # will return a tuple (lower,upper)
+    errorBar1 = np.std(a)   # using standard deviation as errorbar, yerr=errorBar1, lower error = upper error = errorBar1
+    errorBar2 = st.sem(a)   # using standard error of mean as errorbar, same as above
+    errorBar3 = [me-confInt[0],confInt[1]-me]  # using confidence interval as errorbar, yerr=errorBar3, lower error = errorBar3[0], upper error = errorBar3[1]
+    return me, confInt, errorBar3   # these three will be combined as tuple automatically, if function return multiple values
+
+
+if __name__ == '__main__':
+    familyInfoNew = ProteinFamily.parseFile('/Users/ligk2e/Desktop/ssprotein/sec_stru_benchmark_sable135.txt')
+    
+#    import getopt
+#    import sys
+#    try:
+#        options, remainder = getopt.getopt(sys.argv[1:],'hl:k:m:v:',['help','length=','k=','mode=','vote='])
+#    except getopt.GetoptError as err:
+#        print('ERROR:', err)
+#        usage()
+#        sys.exit(1)
+#    for opt, arg in options:
+#        if opt in ('-l','--length'):
+#            length = int(arg)
+#            print('Sliding Window Length:', arg)
+#        elif opt in ('-k','--k'):
+#            k = int(arg)
+#            print('K value for KNN:',arg)
+#        elif opt in ('-m','--mode'):
+#            mode = arg
+#            print('mode of KNN:', arg)
+#        elif opt in ('-v','--vote'):
+#            vote = arg
+#            print('vote measure when using KNN:',arg)
+#        elif opt in ('--help','-h'):
+#            usage() 
+#            sys.exit()  
+#    
+#    
+#    accuracy = main(length,k,mode,vote)
         
             
+    
+    accuracy_l5_k3 = main(5,3,'kdTree','distance')
+    accuracy_l7_k3 = main(7,3,'kdTree','distance')
+    accuracy_l9_k3 = main(9,3,'kdTree','distance')  
+    accuracy_l11_k3 = main(11,3,'kdTree','distance') 
+    
+    accuracy_l5_k5 = main(5,5,'kdTree','distance') 
+    accuracy_l7_k5 = main(7,5,'kdTree','distance')
+    accuracy_l9_k5 = main(9,5,'kdTree','distance') 
+    accuracy_l11_k5 = main(11,5,'kdTree','distance') 
+    
+    accuracy_l5_k7 = main(5,7,'kdTree','distance')
+    accuracy_l7_k7 = main(7,7,'kdTree','distance')
+    accuracy_l9_k7 = main(9,7,'kdTree','distance')
+    accuracy_l11_k7 = main(11,7,'kdTree','distance')
+    
+    accuracy_l5_k10 = main(5,10,'kdTree','distance')
+    accuracy_l7_k10 = main(7,10,'kdTree','distance')
+    accuracy_l9_k10 = main(9,10,'kdTree','distance')
+    accuracy_l11_k10 = main(11,10,'kdTree','distance')
+    
+    import matplotlib.pyplot as plt
+    
+    fig = plt.figure()
+    
+    barWidth = 0.9
+    # in following: 1 means l=5, 2 means l=7, 3 means l=9, 4 means l=11
+    r1 = [1,5,9,13]
+    r2 = [2,6,10,14]
+    r3 = [3,7,11,15]
+    r4 = [4,8,12,16]
+    r5 = sorted(r1 + r2 + r3 + r4)
+    
+    bar1 = [confidenceInterval(item)[0] for item in [accuracy_l5_k3,accuracy_l5_k5,accuracy_l5_k7,accuracy_l5_k10]]
+    bar2 = [confidenceInterval(item)[0] for item in [accuracy_l7_k3,accuracy_l7_k5,accuracy_l7_k7,accuracy_l7_k10]]
+    bar3 = [confidenceInterval(item)[0] for item in [accuracy_l9_k3,accuracy_l9_k5,accuracy_l9_k7,accuracy_l9_k10]]
+    bar4 = [confidenceInterval(item)[0] for item in [accuracy_l11_k3,accuracy_l11_k5,accuracy_l11_k7,accuracy_l11_k10]]
+    
+    yer1 = np.transpose(np.array([confidenceInterval(item)[2] for item in [accuracy_l5_k3,accuracy_l5_k5,accuracy_l5_k7,accuracy_l5_k10]]))
+    yer2 = np.transpose(np.array([confidenceInterval(item)[2] for item in [accuracy_l7_k3,accuracy_l7_k5,accuracy_l7_k7,accuracy_l7_k10]]))
+    yer3 = np.transpose(np.array([confidenceInterval(item)[2] for item in [accuracy_l9_k3,accuracy_l9_k5,accuracy_l9_k7,accuracy_l9_k10]]))
+    yer4 = np.transpose(np.array([confidenceInterval(item)[2] for item in [accuracy_l11_k3,accuracy_l11_k5,accuracy_l11_k7,accuracy_l11_k10]]))    
+    
+    plt.bar(r1,bar1,width=barWidth,color=(0.3,0.1,0.4,0.6),yerr = yer1,capsize=4,label='window length=5')
+    plt.bar(r2,bar2,width=barWidth,color=(0.3,0.33,0.4,0.6),yerr = yer2,capsize=4,label='window length=7')
+    plt.bar(r3,bar3,width=barWidth,color=(0.3,0.65,0.4,0.6),yerr = yer3,capsize=4,label='window length=9')
+    plt.bar(r4,bar4,width=barWidth,color=(0.3,0.9,0.4,0.6),yerr = yer4,capsize=4,label='window length=11')
+    
+    plt.vlines(4.50,0.0,0.60,linestyles='dashed')
+    plt.vlines(8.50,0.0,0.60,linestyles='dashed')
+    plt.vlines(12.50,0.0,0.60,linestyles='dashed')
+    text = ['k=3','k=5','k=7','k=10']
+    for i in range(4):
+        plt.text(x=i*4+2.0,y=0.58,s=text[i],size=12)
+    
+    plt.legend(bbox_to_anchor=(1.04,1),fontsize=10)
+    plt.xticks([r for r in r5],['k=3,l=5','k=3,l=7','k=3,l=9','k=3,l=11',
+                                           'k=5,l=5','k=5,l=7','k=5,l=9','k=5,l=11',
+                                           'k=7,l=5','k=7,l=7','k=7,l=9','k=7,l=11',
+                                           'k=10,l=5','k=10,l=7','k=10,l=9','k=10,l=11'],rotation=60)
+    plt.show()
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
