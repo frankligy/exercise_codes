@@ -11,6 +11,8 @@
 \usepackage{svg}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{fancyvrb}  % for verbatim
+\usepackage{mdframed}  % for mdframed
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -283,6 +285,20 @@ Notable decrease in model performance could be observed regarding each readout, 
    \end{itemize}
    \item The numbers starts at 1 with every call to the enumerate environment.
 \end{enumerate}
+
+
+\section{Some useful frames}
+\begin{mdframed}[backgroundcolor=black!10]
+\textbf{-l --length} : length of sliding window, you could pick 5,7,9,11 \\
+\textbf{-k --k}: K nearest neighbors, increasing k will result in longer runtime \\
+\textbf{-m --mode}: bruteForce or kdTree, it is discouraged to use bruteForce \\
+\textbf{-v --vote}: distance or uniform \\
+\textbf{-h --help}: check help information 
+\end{mdframed}
+
+\begin{verbatim}[frame=single]
+content
+\end{verbatim}
 
 
 \section{Appendix}

@@ -29,7 +29,7 @@ install.packages('shinyDirectoryInput',repos='http://cran.us.r-project.org')
 # all the installed packages
 a = installed.packages() # a will be a matrix with all installed packages and their attributes
 b = library()   # b will be a S3 object
-b1 = library()$result  # this attribute will ba a matrix, recording the all the available path in searched path
+b1 = library()$result  # this attribute will ba a matrix, recording the path for all installed packages
 path = .libPaths()  # this is the path that R will search for
 
 # check the version of R and Rstudio
@@ -55,6 +55,25 @@ rownames()
 
 # if list
 length()
+# two method to access element by their names
+list$sublist1Name
+list[["sublist1Name"]]
+
+# matrix
+a <- matrix(1:12,nrow=3,ncol=4,dimnames=list(c('a','b','c'),c('A','B','C','D')))  # default is column-major when filling in
+
+# array
+vector1 <- c(5,9,3)
+vector2 <- c(10,11,12,13,14,15)
+column.names <- c("col1","col2","col3")
+row.names <- c("row1","row2","row3")
+matrix.names <- c("matrix1","matrix2")
+
+result <- array(c(vector1,vector2),dim=c(3,3,2),dimnames=list(row.names,column.names,matrix.names)) # 2 means depth
+print(result)  # default in R is column-major filling
+nrows(result)  # return rows
+ncols(result)  # return cols
+
 
 # R script, take arguments
 # Rscript whatever.R 1 2 3 4 5 6 7

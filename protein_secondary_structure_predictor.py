@@ -240,117 +240,118 @@ def confidenceInterval(lis):
 if __name__ == '__main__':
     familyInfoNew = ProteinFamily.parseFile('/Users/ligk2e/Desktop/ssprotein/sec_stru_benchmark_sable135.txt')
     
-#    import getopt
-#    import sys
-#    try:
-#        options, remainder = getopt.getopt(sys.argv[1:],'hl:k:m:v:',['help','length=','k=','mode=','vote='])
-#    except getopt.GetoptError as err:
-#        print('ERROR:', err)
-#        usage()
-#        sys.exit(1)
-#    for opt, arg in options:
-#        if opt in ('-l','--length'):
-#            length = int(arg)
-#            print('Sliding Window Length:', arg)
-#        elif opt in ('-k','--k'):
-#            k = int(arg)
-#            print('K value for KNN:',arg)
-#        elif opt in ('-m','--mode'):
-#            mode = arg
-#            print('mode of KNN:', arg)
-#        elif opt in ('-v','--vote'):
-#            vote = arg
-#            print('vote measure when using KNN:',arg)
-#        elif opt in ('--help','-h'):
-#            usage() 
-#            sys.exit()  
-#    
-#    
-#    accuracy = main(length,k,mode,vote)
+    import getopt
+    import sys
+    try:
+        options, remainder = getopt.getopt(sys.argv[1:],'hl:k:m:v:',['help','length=','k=','mode=','vote='])
+    except getopt.GetoptError as err:
+        print('ERROR:', err)
+        usage()
+        sys.exit(1)
+    for opt, arg in options:
+        if opt in ('-l','--length'):
+            length = int(arg)
+            print('Sliding Window Length:', arg)
+        elif opt in ('-k','--k'):
+            k = int(arg)
+            print('K value for KNN:',arg)
+        elif opt in ('-m','--mode'):
+            mode = arg
+            print('mode of KNN:', arg)
+        elif opt in ('-v','--vote'):
+            vote = arg
+            print('vote measure when using KNN:',arg)
+        elif opt in ('--help','-h'):
+            usage() 
+            sys.exit()  
+    
+    
+    accuracy = main(length,k,mode,vote)
         
             
     
-    accuracy_l5_k3 = main(5,3,'kdTree','distance')
-    accuracy_l7_k3 = main(7,3,'kdTree','distance')
-    accuracy_l9_k3 = main(9,3,'kdTree','distance')  
-    accuracy_l11_k3 = main(11,3,'kdTree','distance') 
+    # accuracy_l5_k3 = main(5,3,'kdTree','distance')
+    # accuracy_l7_k3 = main(7,3,'kdTree','distance')
+    # accuracy_l9_k3 = main(9,3,'kdTree','distance')  
+    # accuracy_l11_k3 = main(11,3,'kdTree','distance') 
     
-    accuracy_l5_k5 = main(5,5,'kdTree','distance') 
-    accuracy_l7_k5 = main(7,5,'kdTree','distance')
-    accuracy_l9_k5 = main(9,5,'kdTree','distance') 
-    accuracy_l11_k5 = main(11,5,'kdTree','distance') 
+    # accuracy_l5_k5 = main(5,7,'kdTree','distance') 
+    # accuracy_l7_k5 = main(7,7,'kdTree','distance')
+    # accuracy_l9_k5 = main(9,7,'kdTree','distance') 
+    # accuracy_l11_k5 = main(11,7,'kdTree','distance') 
     
-    accuracy_l5_k7 = main(5,7,'kdTree','distance')
-    accuracy_l7_k7 = main(7,7,'kdTree','distance')
-    accuracy_l9_k7 = main(9,7,'kdTree','distance')
-    accuracy_l11_k7 = main(11,7,'kdTree','distance')
+    # accuracy_l5_k7 = main(5,15,'kdTree','distance')
+    # accuracy_l7_k7 = main(7,15,'kdTree','distance')
+    # accuracy_l9_k7 = main(9,15,'kdTree','distance')
+    # accuracy_l11_k7 = main(11,15,'kdTree','distance')
     
-    accuracy_l5_k10 = main(5,10,'kdTree','distance')
-    accuracy_l7_k10 = main(7,10,'kdTree','distance')
-    accuracy_l9_k10 = main(9,10,'kdTree','distance')
-    accuracy_l11_k10 = main(11,10,'kdTree','distance')
+    # accuracy_l5_k10 = main(5,30,'kdTree','distance')
+    # accuracy_l7_k10 = main(7,30,'kdTree','distance')
+    # accuracy_l9_k10 = main(9,30,'kdTree','distance')
+    # accuracy_l11_k10 = main(11,30,'kdTree','distance')
     
-    import matplotlib.pyplot as plt
+    # import matplotlib.pyplot as plt
     
-    fig = plt.figure()
+    # fig = plt.figure()
     
-    barWidth = 0.9
-    # in following: 1 means l=5, 2 means l=7, 3 means l=9, 4 means l=11
-    r1 = [1,5,9,13]
-    r2 = [2,6,10,14]
-    r3 = [3,7,11,15]
-    r4 = [4,8,12,16]
-    r5 = sorted(r1 + r2 + r3 + r4)
+    # barWidth = 0.9
+    # # in following: 1 means l=5, 2 means l=7, 3 means l=9, 4 means l=11
+    # r1 = [1,5,9,13]
+    # r2 = [2,6,10,14]
+    # r3 = [3,7,11,15]
+    # r4 = [4,8,12,16]
+    # r5 = sorted(r1 + r2 + r3 + r4)
     
-    bar1 = [confidenceInterval(item)[0] for item in [accuracy_l5_k3,accuracy_l5_k5,accuracy_l5_k7,accuracy_l5_k10]]
-    bar2 = [confidenceInterval(item)[0] for item in [accuracy_l7_k3,accuracy_l7_k5,accuracy_l7_k7,accuracy_l7_k10]]
-    bar3 = [confidenceInterval(item)[0] for item in [accuracy_l9_k3,accuracy_l9_k5,accuracy_l9_k7,accuracy_l9_k10]]
-    bar4 = [confidenceInterval(item)[0] for item in [accuracy_l11_k3,accuracy_l11_k5,accuracy_l11_k7,accuracy_l11_k10]]
+    # bar1 = [confidenceInterval(item)[0] for item in [accuracy_l5_k3,accuracy_l5_k5,accuracy_l5_k7,accuracy_l5_k10]]
+    # bar2 = [confidenceInterval(item)[0] for item in [accuracy_l7_k3,accuracy_l7_k5,accuracy_l7_k7,accuracy_l7_k10]]
+    # bar3 = [confidenceInterval(item)[0] for item in [accuracy_l9_k3,accuracy_l9_k5,accuracy_l9_k7,accuracy_l9_k10]]
+    # bar4 = [confidenceInterval(item)[0] for item in [accuracy_l11_k3,accuracy_l11_k5,accuracy_l11_k7,accuracy_l11_k10]]
     
-    yer1 = np.transpose(np.array([confidenceInterval(item)[2] for item in [accuracy_l5_k3,accuracy_l5_k5,accuracy_l5_k7,accuracy_l5_k10]]))
-    yer2 = np.transpose(np.array([confidenceInterval(item)[2] for item in [accuracy_l7_k3,accuracy_l7_k5,accuracy_l7_k7,accuracy_l7_k10]]))
-    yer3 = np.transpose(np.array([confidenceInterval(item)[2] for item in [accuracy_l9_k3,accuracy_l9_k5,accuracy_l9_k7,accuracy_l9_k10]]))
-    yer4 = np.transpose(np.array([confidenceInterval(item)[2] for item in [accuracy_l11_k3,accuracy_l11_k5,accuracy_l11_k7,accuracy_l11_k10]]))    
+    # yer1 = np.transpose(np.array([confidenceInterval(item)[2] for item in [accuracy_l5_k3,accuracy_l5_k5,accuracy_l5_k7,accuracy_l5_k10]]))
+    # yer2 = np.transpose(np.array([confidenceInterval(item)[2] for item in [accuracy_l7_k3,accuracy_l7_k5,accuracy_l7_k7,accuracy_l7_k10]]))
+    # yer3 = np.transpose(np.array([confidenceInterval(item)[2] for item in [accuracy_l9_k3,accuracy_l9_k5,accuracy_l9_k7,accuracy_l9_k10]]))
+    # yer4 = np.transpose(np.array([confidenceInterval(item)[2] for item in [accuracy_l11_k3,accuracy_l11_k5,accuracy_l11_k7,accuracy_l11_k10]]))    
     
-    plt.bar(r1,bar1,width=barWidth,color=(0.3,0.1,0.4,0.6),yerr = yer1,capsize=4,label='window length=5')
-    plt.bar(r2,bar2,width=barWidth,color=(0.3,0.33,0.4,0.6),yerr = yer2,capsize=4,label='window length=7')
-    plt.bar(r3,bar3,width=barWidth,color=(0.3,0.65,0.4,0.6),yerr = yer3,capsize=4,label='window length=9')
-    plt.bar(r4,bar4,width=barWidth,color=(0.3,0.9,0.4,0.6),yerr = yer4,capsize=4,label='window length=11')
+    # plt.bar(r1,bar1,width=barWidth,color=(0.3,0.1,0.4,0.6),yerr = yer1,capsize=4,label='window length=5')
+    # plt.bar(r2,bar2,width=barWidth,color=(0.3,0.33,0.4,0.6),yerr = yer2,capsize=4,label='window length=7')
+    # plt.bar(r3,bar3,width=barWidth,color=(0.3,0.65,0.4,0.6),yerr = yer3,capsize=4,label='window length=9')
+    # plt.bar(r4,bar4,width=barWidth,color=(0.3,0.9,0.4,0.6),yerr = yer4,capsize=4,label='window length=11')
     
-    plt.vlines(4.50,0.0,0.60,linestyles='dashed')
-    plt.vlines(8.50,0.0,0.60,linestyles='dashed')
-    plt.vlines(12.50,0.0,0.60,linestyles='dashed')
-    text = ['k=3','k=5','k=7','k=10']
-    for i in range(4):
-        plt.text(x=i*4+2.0,y=0.58,s=text[i],size=12)
+    # plt.vlines(4.50,0.0,0.70,linestyles='dashed')
+    # plt.vlines(8.50,0.0,0.70,linestyles='dashed')
+    # plt.vlines(12.50,0.0,0.70,linestyles='dashed')
+    # text = ['k=3','k=7','k=15','k=30']
+    # for i in range(4):
+    #     plt.text(x=i*4+2.0,y=0.68,s=text[i],size=12)
     
-    plt.legend(bbox_to_anchor=(1.04,1),fontsize=10)
-    plt.xticks([r for r in r5],['k=3,l=5','k=3,l=7','k=3,l=9','k=3,l=11',
-                                           'k=5,l=5','k=5,l=7','k=5,l=9','k=5,l=11',
-                                           'k=7,l=5','k=7,l=7','k=7,l=9','k=7,l=11',
-                                           'k=10,l=5','k=10,l=7','k=10,l=9','k=10,l=11'],rotation=60)
-    plt.show()
-
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-
-
+    # plt.legend(bbox_to_anchor=(1.04,1),fontsize=10)
+    # plt.xticks([r for r in r5],['k=3,l=5','k=3,l=7','k=3,l=9','k=3,l=11',
+    #                                        'k=7,l=5','k=7,l=7','k=7,l=9','k=7,l=11',
+    #                                        'k=15,l=5','k=15,l=7','k=15,l=9','k=15,l=11',
+    #                                        'k=30,l=5','k=30,l=7','k=30,l=9','k=30,l=11'],rotation=60)
+    # plt.savefig('fig1.pdf',bbox_inches='tight')
+    # plt.show()
+#
+#    
+#    
+#    
+#    
+#    
+#    
+#    
+#    
+#    
+#    
+#    
+#    
+#    
+#    
+#    
+#    
+#    
+#
+#
+#
 
 
 
