@@ -29,7 +29,24 @@ plt.savefig('text.pdf',bbox_inches='tight')
 
 # figure object is different from axe object, they might have diverse method, so let's introduce axes
 fig = plt.figure()
-ax = fig.axes([0,0,1,1]) # this ax anchor at [0,0], width is 100% of canvas, height is 100% of canvas. So it is same as fig
+ax = plt.axes([0,0,1,1]) # this ax anchor at [0,0], width is 100% of canvas, height is 100% of canvas. So it is same as fig
+
+# a more complicated case, illustrating the usage of ax
+left, width = 0.1, 0.65
+bottom, height = 0.1, 0.65
+spacing = 0.005
+rect_scatter = [left, bottom, width, height]
+rect_histx = [left, bottom + height + spacing, width, 0.2]
+rect_histy = [left + width + spacing, bottom, 0.2, height]
+plt.figure(figsize=(8, 8))
+
+ax_scatter = plt.axes(rect_scatter)
+ax_scatter.tick_params(direction='in', top=True, right=True)
+ax_histx = plt.axes(rect_histx)
+ax_histx.tick_params(direction='in', labelbottom=False)
+ax_histy = plt.axes(rect_histy)
+ax_histy.tick_params(direction='in', labelleft=False)
+
 # then we could use ax as handle to do any operations, enjoy!
 
 
@@ -123,6 +140,13 @@ plt.xticks([r for r in r5],['k=3,l=5','k=3,l=7','k=3,l=9','k=3,l=11',
                                        'k=7,l=5','k=7,l=7','k=7,l=9','k=7,l=11',
                                        'k=10,l=5','k=10,l=7','k=10,l=9','k=10,l=11'],rotation=60)
 plt.show()
+
+
+# Seaborn: useful for directly operating DataFrame, have some specific cases under which it will be more 
+# convenienient than matplotlib. For instance: distplot with density plot, scatterplot with regression
+# https://seaborn.pydata.org/index.html
+import seaborn as sns
+
 
 # svg
 import pygal

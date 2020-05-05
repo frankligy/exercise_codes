@@ -1,3 +1,5 @@
+# This Rscript contains logistic regression, lasso regression, cross-validation.
+
 # laod data, clean the data for logistic regression
 library(mlbench)
 library(MASS)
@@ -12,6 +14,12 @@ sum(row_has_na)
 BreastCancer3 <- BreastCancer2[!row_has_na,]
 
 # ramdom sampling to get training and testing data, not n-fold
+"
+three way of doing validation:
+1. fixed proportion, like 80%/20%
+2. k-fold cross validation
+3. leave-one-out cross validation
+"
 set.seed(1)
 mis_rate_vector <- c()
 for (i in 1:100){
@@ -33,9 +41,8 @@ norm_confit <- function(vector_input){
   s = sd(vector_input)
   n = length(vector_input)
   se = s/sqrt(n)
-  error = qnorm(0.975) * s/sqrt(n)
-  lower_bound = me - error
-  upper_bound = me + error
+  lower_bound = me - 2*se   # se or s all make sense i think, by definition, should use s to get 95% area under the curve, but se would make precise range when having larger sample size, see gmail bookmark
+  upper_bound = me + 2*se
   c = c("mean" = me, "sd" = s, "lower_bound" = lower_bound,"upper_bound" = upper_bound)
   return(c)
 }
@@ -62,8 +69,8 @@ table(birthwt1$race)
 model <- glm(low~.,family = binomial,data = birthwt1)
 summary(model)
 
-pchisq(201.38,179,lower.tail=F)
-selection <- stepAIC(model,direction="backward")
+pchisq(201.38,179,lower.tail=F)   # null hypothesis: model fits well, if p>0.05, accept null hypothesis
+selection <- stepAIC(model,direction="backward")  # AIC, the less, the better, same for BIC
 confint(model)
 oddsratio <- exp(model$coefficients)
 pred <- predict(model,newdata=birthwt1,type = "response")

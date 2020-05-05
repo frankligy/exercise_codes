@@ -1,3 +1,10 @@
+"
+This Rscript contains how to do multivariate linear regression, how to do classification tree and regression tree
+using rpart packages.
+"
+
+
+
 library(faraway)
 library(MASS) # for stepAIC function
 library(rpart)
@@ -43,6 +50,7 @@ fit_best <- lm(brozek ~ weight + adipos + free + chest + abdom + thigh + ankle +
 # build regression tree
 MB <- rpart(brozek ~ . , data = fat_2,na.action=na.omit)  # regression tree aims to minimize variance of each leafnode, 
 # this is the criteria to split up one node, intead of using GINI or entropy in classification tree.
+# rpart will automatically recognize if it is a classification tree or regression tree by detecting brozek's value(discrete or continuous)
 # the advantage of it over linear regression is that it offer stratification and more interpretability
 rpart.plot(MB, type = 4, extra = 1, col = "red")  # extra control the aesthetic features, mean was reported in each node
 MB_pre <- predict(MB,newdata=fat_2)

@@ -46,8 +46,8 @@ model %>%
   layer_conv_2d(filters = 32, kernel_size = c(3, 3), activation = "relu",
                 input_shape = c(28, 28, 1)) %>%
   #project 3 : Add the two layers should be added here to run the full code!
-  layer_conv_2d(filters = 32, kernel_size = c(3,3), activation = "relu") %>%
-  layer_max_pooling_2d(pool_size = c(2,2)) %>%
+  # layer_conv_2d(filters = 32, kernel_size = c(3,3), activation = "relu") %>%
+  # layer_max_pooling_2d(pool_size = c(2,2)) %>%
   layer_dropout(rate = 0.4) %>% 
   layer_flatten() %>%
   layer_dense(units = 128, activation = 'relu') %>%

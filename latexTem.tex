@@ -1,18 +1,18 @@
 \documentclass{article}
 \usepackage[utf8]{inputenc}
-\usepackage{amsmath}
-\usepackage{graphicx}
-\usepackage{subcaption}
-\usepackage{wrapfig}
-\usepackage{float}
+\usepackage{amsmath}     % for math rendering
+\usepackage{graphicx}    % for integrate image
+\usepackage{subcaption}  % for sub graph
+\usepackage{wrapfig}     % for wrapping figure with text
+\usepackage{float}       % required for H options for positioning figures
 \usepackage[left=2cm,right=2cm,top=2cm,bottom=2cm]{geometry}
-\usepackage[colorlinks]{hyperref}
+\usepackage[colorlinks]{hyperref}    
 \usepackage{indentfirst}
-\usepackage{svg}
-\usepackage{listings}
-\usepackage{xcolor}
+\usepackage{listings}   % for code
+\usepackage{xcolor}    % for code
 \usepackage{fancyvrb}  % for verbatim
 \usepackage{mdframed}  % for mdframed
+\usepackage{booktab}  % for advanced syntax of creating table
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
 \definecolor{codegray}{rgb}{0.5,0.5,0.5}
@@ -101,8 +101,8 @@ Python3 codes are available thorugh \href{https://github.com/frankligy/exercise_
 \subsection*{b. Plot of accuracy, precision and recall}
 Accuracy, precision and recall could be calculated by scikit-learn metrics module and matplotlib was adoped to generate the \autoref{fig2} below.
 \begin{center}
-    \begin{tabular}{|c|c|c|c|c|c|c|}
-    \hline
+    \begin{tabular}{|c|c|c|c|c|c|c|}   % vline and hline can all be removed per requested
+    \hline   % hline can be replaced by \toprule \bottomrule \midrule, with booktab package loaded
      & node5 & node15 & node25 &node 40 & node50 \\
     \hline
     Accuracy & 0.84 & 0.83 & 0.81 & 0.73 & 0.81\\
@@ -117,9 +117,11 @@ Accuracy, precision and recall could be calculated by scikit-learn metrics modul
     \hline
     \end{tabular}
 \end{center}
-\begin{figure}[H]
+
+
+\begin{figure}[H]  % default float setting is [tbp] p means only sit on pages that have floats(table and figure), [h] will tell complier to follow the text flow. [H] means, put it right here.
     \centering
-    \includegraphics[scale=0.8]{decision_tree_images/question1/metrics.png}
+    \includegraphics[scale=0.8]{decision_tree_images/question1/metrics.png}   % [] optional arguments, {} mandatory arguments
     \caption{Accuracy, precision and recall for different leafnode records}
     \label{fig2}
 \end{figure}
@@ -133,64 +135,9 @@ Same process was applied as question1, \autoref{fig3} in page \pageref{fig3} are
 Python3 codes are available thorugh \href{https://github.com/frankligy/exercise_codes/blob/master/decision_tree_copy2.py}{github}.
 
 
-\begin{figure}[h]
-    \centering
-    \begin{subfigure}[h]{.45\linewidth}
-    \includegraphics[width=\linewidth]{decision_tree_images/question2/tree5.png}
-    \caption{Tree with 5 leafnode records}
-    \label{q2_tree5}
-    \end{subfigure}
-    
-    \begin{subfigure}[h]{.45\linewidth}
-    \includegraphics[width=\linewidth]{decision_tree_images/question2/tree15.png}
-    \caption{Tree with 15 leafnode records}
-    \label{q2_tree15}
-    \end{subfigure}
-    \begin{subfigure}[h]{.45\linewidth}
-    \includegraphics[width=\linewidth]{decision_tree_images/question2/tree25.png}
-    \caption{Tree with 25 leafnode records}
-    \label{q2_tree25}
-    \end{subfigure}. %overhere the blankline is super important
-    
-    \begin{subfigure}[h]{.45\linewidth}
-    \includegraphics[width=\linewidth]{decision_tree_images/question2/tree40.png}
-    \caption{Tree with 40 leafnode records}
-    \label{q2_tree40}
-    \end{subfigure}
-    \begin{subfigure}[h]{.45\linewidth}
-    \includegraphics[width=\linewidth]{decision_tree_images/question2/tree50.png}
-    \caption{Tree with 50 leafnode records}
-    \label{q2_tree50}
-    \end{subfigure} 
-    
-    \caption{Tree structure for separating "Hernia","Spondylolisthesis" and "Normal"}
-    \label{fig3}
-\end{figure}
-
 \subsection*{b. Plot of accuracy, precision and recall}
 Same process was applied and \autoref{fig4} was generated as a recapitulation of all the metrics. The precision of normal patients stay constant and same as question1, there is no consistent trends we observed here. However, we could tentatively draw the conclusion that increasing of records in leafnode doesn't have drastic impact on performance in this multi-class problem.
 
-\begin{center}
-    \begin{tabular}{|c|c|c|c|c|c|c|}
-    \hline
-     & node5 & node15 & node25 &node 40 & node50 \\
-    \hline
-    Accuracy & 0.85 & 0.86 & 0.85 & 0.85 & 0.85\\
-    \hline
-    Precision[Hernia] & 0.71 & 0.7 & 0.61 & 0.67 & 0.67\\
-    \hline
-    Precision[Spondylolisthesis] & 0.97 & 0.97 & 0.97 & 0.97 & 0.97\\
-    \hline
-    Precision[Normal] &0.75 & 0.78 & 0.8 & 0.76 & 0.76\\
-    \hline
-    Recall[Hernia] & 0.35 & 0.5 & 0.57 & 0.43 & 0.43\\
-    \hline
-    Recall[Spondylolisthesis] 1 & 1 & 1 & 1 & 1 & 1\\
-    \hline
-    Recall[Normal]& 0.9 & 0.87 & 0.8 & 0.87 & 0.87\\
-    \hline
-    \end{tabular}
-\end{center}
 \begin{figure}[H]
     \centering
     \includegraphics[scale=1]{decision_tree_images/question2/metrics.png}
@@ -204,59 +151,11 @@ After calculating the correlations between each column, deleting the most correl
 
 Python3 codes are available thorugh \href{https://github.com/frankligy/exercise_codes/blob/master/decision_tree_copy3.py}{github}.
 
-\begin{figure}[h]
-    \centering
-    \begin{subfigure}[h]{.45\linewidth}
-    \includegraphics[width=\linewidth]{decision_tree_images/question3/tree5.png}
-    \caption{Tree with 5 leafnode records}
-    \label{q3_tree5}
-    \end{subfigure}
-    
-    \begin{subfigure}[h]{.45\linewidth}
-    \includegraphics[width=\linewidth]{decision_tree_images/question3/tree15.png}
-    \caption{Tree with 15 leafnode records}
-    \label{q3_tree15}
-    \end{subfigure}
-    \begin{subfigure}[h]{.45\linewidth}
-    \includegraphics[width=\linewidth]{decision_tree_images/question3/tree25.png}
-    \caption{Tree with 25 leafnode records}
-    \label{q3_tree25}
-    \end{subfigure}. %over here the blank line is super important
-    
-    \begin{subfigure}[h]{.45\linewidth}
-    \includegraphics[width=\linewidth]{tree40.png}
-    \caption{Tree with 40 leafnode records}
-    \label{q3_tree40}
-    \end{subfigure}
-    \begin{subfigure}[h]{.45\linewidth}
-    \includegraphics[width=\linewidth]{tree50.png}
-    \caption{Tree with 50 leafnode records}
-    \label{q3_tree50}
-    \end{subfigure} 
-    
-    \caption{Tree structure for separating "Abnormal "and "Normal" after trimming}
-    \label{fig5}
-\end{figure}
+
 
 \subsection*{b. Plot of accuracy, precision and recall}
 We can obtain all the necassary metrics using same calculation and scripts. Refernce to \autoref{fig6} in \pageref{fig6}
-\begin{center}
-    \begin{tabular}{|c|c|c|c|c|c|c|}
-    \hline
-     & node5 & node15 & node25 &node 40 & node50 \\
-    \hline
-    Accuracy & 0.6875 & 0.6625 & 0.6625 & 0.6625 & 0.65\\
-    \hline
-    Precision[Abnormal] & 0.75 & 0.68 & 0.70 & 0.70 & 0.69\\
-    \hline
-    Precision[Normal] & 0.58 & 0.57 & 0.56 & 0.56 & 0.55\\
-    \hline
-    Recall[Abnormal] & 0.60 & 0.37 & 0.43 & 0.43 & 0.4\\
-    \hline
-    Recall[Normal] & 0.6&0.37&0.43&0.43&0.4\\
-    \hline
-    \end{tabular}
-\end{center}
+
 \begin{figure}[H]
     \centering
     \includegraphics[scale=1]{metrics.png}
@@ -307,7 +206,4 @@ your python code
 \end{lstlisting}
 
 
-
-
-\section{}
 \end{document}
