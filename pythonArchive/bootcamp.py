@@ -29,6 +29,12 @@ d = copy.deepcopy(a)  # deep copy copied the whole original object
 d[0] = 'test'
 d[2][0] = 'test'
 
+# python, function call by reference, so original copy will be changed 
+# but, for immutable type, it doesn't matter, it won't be changed but raise an error
+# for mutable type, it will be changed, but we almost never really need to change the original list,
+# we mostly read the original list and construct new stuff. 
+# when we need to made change on original list, it is dangerous
+
 
 #### itertools module
 '''
@@ -89,6 +95,7 @@ a1 = iter(a)
 # advanced usage
 items1 = list(map(lambda x: x ** 2, filter(lambda x: x % 2, range(1, 10))))
 colors = list(map(lambda x:x%2,[random.randint(0,200) for i in range(200)]))
+occurence = [k for k in range(len(hlaAllele)) if hlaAllele[i] == hlaQuery]  # find all occurence of a item in a list
 
 #### Collections Module
 '''
@@ -125,6 +132,9 @@ with open('file3.txt','r',encoding = 'utf-8') as f2:
 
 with open('file3.txt','r',encoding = 'utf-8') as f3:
     for line in f3: print(line)
+    
+with open('file1.txt','r') as f4, open('file2.txt','w') as f5:
+    
     
     
 # GUI programming ****** Don't run the following code, please   **********
@@ -505,4 +515,60 @@ def myFun(**kwargs):
     for key, value in kwargs.items(): 
         print ("{0} == {1}".format(key,value)) 
   
-myFun(first ='Geeks', mid ='for', last='Geeks')  
+myFun(first ='Geeks', mid ='for', last='Geeks') 
+
+
+#### subprocess module
+from subprocess import run,Popen,PIPE
+
+# subprocess.run is a high-level wrapper and also the latest one, compared to subprecess.call etc
+# return a CompleteProcess object, text means the stdout, stderr will be string instead bytes b''
+# capture_output can not be used with stdout, stderr, only one way
+c = subprocess.run([path,'-p',intFile,'-BA','-a','HLA-A01:01,HLA-A03:01,HLA-B07:02'],capture_output=True,text=True)
+# stdout is a file
+with open('log2.txt','w') as f2:   # give stdout a TextIOWrapper object
+    subprocess.run([path,'-p',intFile,'-BA','-a','HLA-A01:01,HLA-A03:01,HLA-B07:02'],stdout=f2)
+    
+# low-level, conferring a lot of flexibility,return a Popen object
+p = subprocess.Popen([path,'-p',intFile,'-BA','-a','HLA-A01:01,HLA-A03:01,HLA-B07:02'],stdout=subprocess.PIPE,text=True)
+(stdout,stderr) = p.communicate
+
+# stdout is a file
+with open('log2.txt','w') as f2:   # give stdout a TextIOWrapper object
+    subprocess.Popen([path,'-p',intFile,'-BA','-a','HLA-A01:01,HLA-A03:01,HLA-B07:02'],stdout=f2)
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
