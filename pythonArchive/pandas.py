@@ -38,7 +38,7 @@ Df.rename(columns={'lower':'lower1'})  # specify how to rename the columns
 Df = Df[['lower','upper']]   # will be a DataFrame
 Df['lower']  # will be a Series, the distinction is that Series doesn' t have columns
 
-Df.iloc[1]  # will be a Index
+Df.iloc[1]  # will be a series object
 Df.iloc[0:2]  # will be a DataFrame
 Df.iloc[[0,2]] # will bea DataFrame
 
@@ -46,6 +46,9 @@ Df.iloc[[0,2]] # will bea DataFrame
 Df.iloc[[0,2],[0,2]]   # will be a DataFrame
 Df.iloc[1,1]    # will not be a string, the type of each entry itself
 Df.iloc[:,0:1]   # will ba a DataFrame, not a Series
+
+Df.iloc[1][['a','b']]   # numeric for row, string for column
+Df[['a','b']].iloc[1]  # another way to do that.
 
 Df['new']=[4,5,6]
 Df.insert(1,'old',[5,6,7])  # new column will become column 1

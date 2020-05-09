@@ -538,7 +538,22 @@ with open('log2.txt','w') as f2:   # give stdout a TextIOWrapper object
     subprocess.Popen([path,'-p',intFile,'-BA','-a','HLA-A01:01,HLA-A03:01,HLA-B07:02'],stdout=f2)
     
     
-    
+#### random module    
+import random
+
+random.seed(2)
+random.getstate()
+
+random.randint(4,10)  
+seq = [1,2,3,4]
+random.choice(seq)
+random.choices(seq,k=2)   # can specify weight
+random.shuffle(seq)
+
+random.sample(seq,k=2)
+
+random.random()   # floating point between [0.0,1.0)
+random.uniform(4,10)
     
     
     
