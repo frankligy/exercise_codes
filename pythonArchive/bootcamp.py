@@ -556,10 +556,28 @@ random.random()   # floating point between [0.0,1.0)
 random.uniform(4,10)
     
     
+# pickle,shelve, hdf5
+a= 1
+b=2
+import pickle
+with open('file.p','wb') as file1:    # BufferedReader object
+    pickle.dump(a,file1)
     
+with open('file.p','rb') as file2:
+    a = pickle.load(file2)
     
+import shelve
+with open('file') as db:   # DbfilenameShelf object
+    db['a'] = a
+    db['b'] = b
     
+with open('file') as db:
+    a = db['a']
+    b = db['b']
     
+        
+    
+
     
     
     
