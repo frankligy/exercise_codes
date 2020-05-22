@@ -556,7 +556,7 @@ random.random()   # floating point between [0.0,1.0)
 random.uniform(4,10)
     
     
-# pickle,shelve, hdf5
+# pickle,shelve, hdf5, bz2
 a= 1
 b=2
 import pickle
@@ -565,7 +565,8 @@ with open('file.p','wb') as file1:    # BufferedReader object
     
 with open('file.p','rb') as file2:
     a = pickle.load(file2)
-    
+
+###################################################    
 import shelve
 with open('file') as db:   # DbfilenameShelf object
     db['a'] = a
@@ -577,8 +578,16 @@ with open('file') as db:
     
         
     
+####################################################
+import bz2
+import pickle
+import _pickle as cPickle
 
-    
+with bz2.BZ2File('dicSRA.pbz2','w') as f: 
+    cPickle.dump(dicSRA, f)  
+
+with bz2.BZ2File('dicSRA.pbz2','rb') as f1:
+    data = cPickle.load(f1)      
     
     
     
