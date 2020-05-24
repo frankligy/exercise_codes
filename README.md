@@ -1,6 +1,6 @@
 # exercise_codes
 
-* Disclaimer: If you found any of these code useful, we can use them but please indicate the source.*
+**Disclaimer: If you found any of these code useful, we can use them but please indicate the source.**
 
 This is not a project-based repository, it is just a folder for storing my daily coding, including(ranked in descending order on the basis of usage frequency):
 
