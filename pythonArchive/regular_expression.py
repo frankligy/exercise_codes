@@ -23,7 +23,7 @@ Created on Fri Mar  6 11:58:43 2020
 # 3. wild card special character
 # 4. Anchor character
 # 5. Quantify character
-# 6. character set (metacharacters are not special in character set, caret ^ will have "negation" meaning in character set)
+# 6. character set (metacharacters are not special in character set, caret ^ will have "negation" meaning in character set),[az-] here - means literal, [a-z] here - means range
 # 7. Alternatives(TAA|TGG|TGA), [] character set can only handle alternatives in single leagth. Also if you wanna capture them (point9)
 # 8. Grouping in conjuction with quantifier (\w+\b)*
 # 9. Grouping in conjunction with back reference ()()  ->> \1 refer to the first paranthesis, \2 refer to the second, 
