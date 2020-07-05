@@ -202,7 +202,7 @@ then
 fi
 
 # example3
-# [ -f file ] means if it is a file ; [ -d file ] means if the file is a folder; [ -s file ] will be true when file exist and it is not empty.
+# [ -f file ] means if it is a file ; [ -d file ] means if the file is a folder; [ -s file ] will be true when file exist and it is not empty; [! -s file]
 if [ -e /root/shell/a.txt ] || [10 -gt 5]   # if exist this file   # && means and, || means or
 then
 	echo "Hi"
@@ -247,7 +247,36 @@ read -p "please type in second parameter n2 " n2
 getSum $n1 $n2
 
 # log file
-./test.sh > log.dat 2>&1    # 0 means stdin, 1 means stdout, 2 means stderr, it means direct stderr to log.dat as well.
+./test.sh > log.dat 2>&1    # 0 means stdin, 1 means stdout, 2 means stderr, it means direct stderr to stdout, which is log.dat as well.
+
+
+# parse the arguments
+usage="Usage: $0 -S sample_name -I input_dir -O output_dir"
+while getopts S:I:O: flag; do
+    case $flag in
+    S)
+    sample=$OPTARG
+    ;;
+    I)
+    input_dir=$OPTARG
+    ;;
+    O)
+    output_dir=$OPTARG
+    ;;
+    \?)
+    echo $usage >& 2    # redirect to stderr
+    exit -1
+    ;;
+    esac
+done
+shift $(( OPTIND - 1));
+
+# calculate running time
+master_time_start=`date +%s`
+# your program
+master_time_end=`date +%s`
+(master_time_exec=`expr $(( $master_time_end - $master_time_start ))`
+
 
 # conda
 module load anaconda3   # only on cluster
