@@ -79,6 +79,18 @@ for key,value in dic1.items():
 
 for key,value in dic2.items():
     dic2[key] = collections.Counter(value) 
+    
+    
+# let's extract all possible contact site
+seq1_contact = []
+seq2_contact = []
+for counter in dic1.values():
+    for k,v in counter.items():
+        if v > 10: seq1_contact.append(seq1[k])
+
+for counter in dic2.values():
+    for k,v in counter.items():
+        if v > 10: seq2_contact.append(seq2[k])
 
 
 # load 40 AACP
@@ -233,13 +245,17 @@ Y = data['cond'].values
 from torch.utils.data import Dataset, DataLoader, random_split
 import torch
 from torch.nn.utils.rnn import pad_sequence
+import torch.nn as nn
+import torch.nn.functional as F
 
-torch.manual_seed(0)
+from sklearn.metrics import roc_auc_score
+
+#torch.manual_seed(0)
 
 whole = []
 for i in range(data.shape[0]):
     peptide = data.iloc[i]['peptide']
-    cat = seq1 + peptide + seq2
+    cat = ''.join(seq1_contact) + peptide + ''.join(seq2_contact)
     whole.append(cat)
 data_new = data.join(pd.Series(whole,name='whole'))
     
@@ -247,7 +263,7 @@ data_new = data.join(pd.Series(whole,name='whole'))
 class my_dataset(Dataset):
     def __init__(self,original):
         self.original = original
-        self.new_data = torch.transpose(self.padded_to_max_len(),1,2)   # it is a torch
+        self.new_data = self.padded_to_max_len()   # it is a torch
         self.label = self.get_Y()   # torch [1,209]
 
         
@@ -264,7 +280,7 @@ class my_dataset(Dataset):
         for i in range(self.original.shape[0]):
             whole = self.original.iloc[i]['whole']
             #print(whole)
-            onehot = torch.from_numpy(my_dataset_X.onehot_peptide(whole)) # length*20
+            onehot = torch.from_numpy(my_dataset.onehot_peptide(whole)) # length*20
             #print(onehot,onehot.size(),onehot[0,:])
             tmp.append(onehot)
         #print(tmp[0][0,:])
@@ -281,7 +297,7 @@ class my_dataset(Dataset):
     def onehot_peptide(pep):
         result = np.zeros([20,len(pep)])
         for i in range(result.shape[1]):
-            result[:,i] = my_dataset_X.onehot_aa(pep[i])
+            result[:,i] = my_dataset.onehot_aa(pep[i])
         return np.transpose(result)
     
     @staticmethod
@@ -315,18 +331,118 @@ class my_dataset(Dataset):
 data_torch = my_dataset(data_new)
 
 
+
+
+
+# let's build the model
+class GRU_immuno(nn.Module):
+    def __init__(self,seq_len,hidden_size,batch_size,input_size,num_layers,bi):
+        super(GRU_immuno, self).__init__()
+        self.seq_len = seq_len
+        self.hidden_size = hidden_size
+        self.batch_size = batch_size
+        self.input_size = input_size
+        self.num_layers = num_layers
+        self.bi = bi
+        self.gru3 = nn.GRU(input_size,hidden_size,num_layers=num_layers, bidirectional = bi,batch_first=True)
+        self.attn = nn.Linear(2*hidden_size+1,1)   # bidirectional, so *2 , then add the next hidden size, in total, *3
+        self.gru1 = nn.GRU(2*hidden_size,1,num_layers=1,bidirectional=False,batch_first=True)
+        
+    def forward(self,x):
+        # print(x.size())  torch.Size([10, 191, 20])
+        out,h_n = self.gru3(x.float(),self.init_hidden_state())
+        next_init = torch.zeros(1*1,self.batch_size,1)
+        weights= []
+        for i in range(out.shape[1]):
+            # print(torch.squeeze(out[:,i,:],dim=1).size()) torch.Size([10, 200])
+            # print(torch.squeeze(next_init,dim=0).size()) torch.Size([10, 1])
+            input_attn = torch.cat((torch.squeeze(out[:,i,:],dim=1),torch.squeeze(next_init,dim=0)),dim=1)
+            # print(input_attn.size())  # torch.Size([10, 201])
+            weights.append(self.attn(input_attn))
+        normalized_weights = F.softmax(torch.cat(weights,dim=1),dim=1).unsqueeze(1)  # [batch_size,1,seq_len]
+        context = torch.bmm(normalized_weights,out)     # [batch_size ,1 ,2*hidden_size]
+        result,_ = self.gru1(context,next_init)   # [batch_size,1,1]
+        # print(result.size())  torch.Size([10, 1, 1])
+        # print(F.sigmoid(result.squeeze(1)).size())  torch.Size([10, 1])
+        return torch.sigmoid(result.squeeze(1))
+        
+        
+        
+    def init_hidden_state(self):
+        return torch.zeros((int(self.bi)+1)*self.num_layers,self.batch_size,self.hidden_size)
+        
+        
+        
+class Estimator(object):
+    def __init__(self,model,optimizer,loss_f):
+        self.model = model
+        self.optimizer = optimizer
+        self.loss_f = loss_f
+        
+    def training_one_epoch(self,dataLoader,batch_size):
+        loss_list = []
+        acc_list = []
+        for idx,(X,y) in enumerate(dataLoader):
+            X,y = X.float(),y.long()
+            self.optimizer.zero_grad()
+            y_pred = self.model(X)
+            y_neg = torch.ones([batch_size,1]) - y_pred
+            y_pred4crossEntropy = torch.cat([y_neg,y_pred],dim=1)  # [batch_size,2]
+            # print(y_pred4crossEntropy.size(),y_pred.dtype)
+            # print(y.size(),y.dtype)
+            loss = self.loss_f(y_pred4crossEntropy,y)
+            loss.backward()
+            self.optimizer.step()
+            loss_list.append(loss.item())
+            #print(y_pred[:,0])
+            #print((y_pred[:,0]>0.5).float())
+            #print(y.float())
+
+            accuracy = ((y_pred[:,0] > 0.5).float() == y.float()).sum().data.numpy()/batch_size
+            #print(accuracy)
+            acc_list.append(accuracy)
+            
+        return sum(loss_list)/len(loss_list),sum(acc_list)/len(acc_list)
+    
+    def fit(self,dataLoader,batch_size,epoch):
+        self.model.train()
+        for i in range(epoch):
+            loss,acc = self.training_one_epoch(dataLoader,batch_size)
+            print('Epoch {0}/{1} loss: {2:6.2f} - accuracy: {3:6.2f}'.format(i,epoch,loss,acc))
+            
+    def validation(self,dataset):  # for validation set
+        val_loader = DataLoader(dataset,batch_size=len(dataset),shuffle=False)
+        for idx,(X,y) in enumerate(val_loader):
+            y_pred = self.model(X)
+            y_pred_np = y_pred.data.numpy()
+            auc = roc_auc_score(y_pred_np,y.data.numpy())
+        return auc
+    
+    def prediction(self,dataset):  # for testing set
+        test_loader = DataLoader(dataset,batch_size=10,shuffle=True,drop_last=True)
+        for idx,(X,y) in enumerate(test_loader):
+            y_pred = self.model(X)
+            y_pred_np = (y_pred > 0.5).float().long().view(1,-1).squeeze(0).data.numpy()
+            y_label = y.long().data.numpy()
+            print(y_pred_np,y_label)
+            auc = roc_auc_score(y_pred_np,y_label)
+        return auc
+                
+            
 #training_set, validation_set, testing_set = random_split(data_torch,(200,5,4))
 training_set, testing_set = random_split(data_torch,(170,39))
         
 
-data_torch_loader = DataLoader(data_torch,batch_size=10,shuffle=True,drop_last=True)
-for i,batch in enumerate(data_torch_loader):
-    print(i,batch)
-    break
-
-
-# let's build the model
-
+# Starting to work
+data_torch_training_loader = DataLoader(training_set,batch_size=10,shuffle=True,drop_last=True)
+model = GRU_immuno(seq_len=191, hidden_size=100, batch_size=10, input_size=20, num_layers=3, bi=True)
+clf = Estimator(model,optimizer=torch.optim.Adam(model.parameters(), lr=0.001, weight_decay = 0.001),loss_f=nn.CrossEntropyLoss())         
+clf.fit(data_torch_training_loader,10,5)   
+clf.prediction(testing_set)     
+        
+            
+            
+    
 
 
 
