@@ -6,6 +6,13 @@ Created on Sun Apr  5 11:00:13 2020
 @author: ligk2e
 """
 
+# pip
+
+pip install package
+pip uninstall package
+pip install package --upgrade
+conda upgrade package
+pip install package==3.1.0    # downgrade
 
 #### copy module
 # Assignmnent means let the left point to the right
