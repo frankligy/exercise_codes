@@ -331,84 +331,173 @@ class my_dataset(Dataset):
 data_torch = my_dataset(data_new)
 
 
-
-
-
-# let's build the model
-class GRU_immuno(nn.Module):
-    def __init__(self,seq_len,hidden_size,batch_size,input_size,num_layers,bi):
-        super(GRU_immuno, self).__init__()
-        self.seq_len = seq_len
-        self.hidden_size = hidden_size
-        self.batch_size = batch_size
+class Encoder(nn.Module):
+    def __init__(self,input_size,hidden_size,num_layers):
+        super(Encoder,self).__init__()
         self.input_size = input_size
+        self.hidden_size = hidden_size
         self.num_layers = num_layers
-        self.bi = bi
-        self.gru3 = nn.GRU(input_size,hidden_size,num_layers=num_layers, bidirectional = bi,batch_first=True)
-        self.attn = nn.Linear(2*hidden_size+1,1)   # bidirectional, so *2 , then add the next hidden size, in total, *3
-        self.gru1 = nn.GRU(2*hidden_size,1,num_layers=1,bidirectional=False,batch_first=True)
         
-    def forward(self,x):
-        # print(x.size())  torch.Size([10, 191, 20])
-        out,h_n = self.gru3(x.float(),self.init_hidden_state())
-        next_init = torch.zeros(1*1,self.batch_size,1)
-        weights= []
-        for i in range(out.shape[1]):
-            # print(torch.squeeze(out[:,i,:],dim=1).size()) torch.Size([10, 200])
-            # print(torch.squeeze(next_init,dim=0).size()) torch.Size([10, 1])
-            input_attn = torch.cat((torch.squeeze(out[:,i,:],dim=1),torch.squeeze(next_init,dim=0)),dim=1)
-            # print(input_attn.size())  # torch.Size([10, 201])
-            weights.append(self.attn(input_attn))
-        normalized_weights = F.softmax(torch.cat(weights,dim=1),dim=1).unsqueeze(1)  # [batch_size,1,seq_len]
-        context = torch.bmm(normalized_weights,out)     # [batch_size ,1 ,2*hidden_size]
-        result,_ = self.gru1(context,next_init)   # [batch_size,1,1]
-        # print(result.size())  torch.Size([10, 1, 1])
-        # print(F.sigmoid(result.squeeze(1)).size())  torch.Size([10, 1])
-        return torch.sigmoid(result.squeeze(1))
+        self.gru = nn.GRU(self.input_size,self.hidden_size,num_layers=self.num_layers,
+                          bidirectional=True,batch_first=True)
+        
+    def forward(self,x): # shape of x: [batch,seq_len,input_size]
+
+        out,hn = self.gru(x)
+        return out,hn
+    
+    
+
+class Decoder(nn.Module):
+    def __init__(self,hidden_size,num_layers=1):
+        super(Decoder,self).__init__()
+        
+        # self.encoder_out = encoder_out
+        # self.encoder_hn = encoder_hn
+        
+        self.output_size = hidden_size   # encoder_hidden_size
+        self.input_size = hidden_size*2 +  self.output_size  # 2 * encoder_hidden_size
+        self.hidden_size = self.output_size
+        
+        self.gru = nn.GRU(self.input_size,self.hidden_size,num_layers=1,bidirectional=False,batch_first=True)
+        
+        self.energy = nn.Linear(self.input_size,1)
+        self.Softmax = nn.Softmax(dim=2)
+        self.relu = nn.ReLU()
+        
+    def forward(self,x,encoder_out,encoder_hn): # shape of x : [batch_size,1,self.output_size]
+    
+        weights = []   # store softmax(Eij) value
+        #print('encoder_out:',encoder_out.size())
+        for i in range(encoder_out.shape[1]):
+            tmp = x.transpose(0,1)   # change the shape of x to [1,batch_size,output_size] for torch.cat
+            # print('tmp:',tmp.size())
+            # print('encoder_out[:,i,:]:',encoder_out[:,i,:].size())
+            
+            # then remember the shape of encoder_out[i] is: [1,batch_size,2*encoder_hidden_size]
+            E = self.relu(self.energy(torch.cat((tmp,encoder_out[:,i,:].unsqueeze(0)),dim=2)))  # [1,batch_size,1]
+            weights.append(E)
+            
+        stacked_weights = torch.cat(weights,dim=2)  # [1,batch_size,seq_len]
+        normalized_weights = self.Softmax(stacked_weights) # didn't change dimensions
+        context_vector = torch.bmm(normalized_weights.transpose(0,1),encoder_out)  
+        # [batch,1,seq_Len] * [batch,seq_len,2*encoder_hidden_size] = [batch,1,2*encoder_hidden_size]
+        
+        out,hn = self.gru(torch.cat((x,context_vector),dim=2))
+        
+        return out,hn
+    
+class GRU_immuno(nn.Module):
+    def __init__(self,encoder,decoder,target_len,hidden_size,linear_hidden_size,p=0.25):
+        super(GRU_immuno,self).__init__()
+        self.encoder = encoder
+        self.decoder = decoder
+        self.target_len = target_len
+        self.hidden_size = hidden_size
+        self.linear_hidden_size = linear_hidden_size
+        
+        self.fc1 = nn.Linear(self.target_len*self.hidden_size,linear_hidden_size)
+        self.dropout = nn.Dropout(p)
+        self.relu = nn.ReLU()
+        self.fc2 = nn.Linear(self.linear_hidden_size,2)
+        self.Sigmoid = nn.Sigmoid()
+        
+    def forward(self,input_data,target0):  # [batch,seq_len,input_size]
+         
+        encoder_out,encoder_hn = self.encoder(input_data)
+        #print('encoder_out:',encoder_out.size())
+        
+        running_hn = encoder_hn
+        x = target0
+        
+        batch_size = encoder_out.shape[0]
+        hidden_size = encoder_hn.shape[2]
+        
+        result = torch.zeros([self.target_len,batch_size,hidden_size])
+        for i in range(self.target_len):
+            decoder_out,decoder_hn = self.decoder(x,encoder_out,running_hn)
+            # dimention of decoder_out: [batch,1,hidden]
+            # print('decoder',decoder_out.size())
+            # print('result',result[i].size())
+            result[i] = decoder_out.transpose(0,1).squeeze(0)
+            x = decoder_out
+            running_hn = decoder_hn
+        
+        # shape of result : [target_len,batch_size,hidden_size]
+            
+        result_go = result.reshape(result.shape[1],-1)
+        out = self.relu(self.dropout(self.fc1(result_go)))
+        out = self.fc2(out)
+        out = self.Sigmoid(out)   # out: [batch,2]
+            
+        return out
+            
+            
         
         
         
-    def init_hidden_state(self):
-        return torch.zeros((int(self.bi)+1)*self.num_layers,self.batch_size,self.hidden_size)
+            
+            
+        
+
+
+
         
         
         
 class Estimator(object):
-    def __init__(self,model,optimizer,loss_f):
+    def __init__(self,model,optimizer,scheduler,loss_f,device):
         self.model = model
         self.optimizer = optimizer
+        self.scheduler = scheduler
         self.loss_f = loss_f
+        self.device = device
         
-    def training_one_epoch(self,dataLoader,batch_size):
+    def training_one_epoch(self,dataLoader,batch_size,hidden_size):
         loss_list = []
         acc_list = []
         for idx,(X,y) in enumerate(dataLoader):
-            X,y = X.float(),y.long()
+            X,y = X.float().to(device),y.long().to(device)
             self.optimizer.zero_grad()
-            y_pred = self.model(X)
-            y_neg = torch.ones([batch_size,1]) - y_pred
-            y_pred4crossEntropy = torch.cat([y_neg,y_pred],dim=1)  # [batch_size,2]
-            # print(y_pred4crossEntropy.size(),y_pred.dtype)
-            # print(y.size(),y.dtype)
-            loss = self.loss_f(y_pred4crossEntropy,y)
+            y_pred = self.model(X,torch.randn([batch_size,1,hidden_size]))
+            loss = self.loss_f(y_pred,y)
             loss.backward()
             self.optimizer.step()
             loss_list.append(loss.item())
-            #print(y_pred[:,0])
-            #print((y_pred[:,0]>0.5).float())
-            #print(y.float())
-
-            accuracy = ((y_pred[:,0] > 0.5).float() == y.float()).sum().data.numpy()/batch_size
-            #print(accuracy)
-            acc_list.append(accuracy)
+            
+            num_correct = 0
+            num_samples = 0
+            _,predictions = y_pred.max(1)
+            num_correct += (predictions == y).sum()
+            num_samples  += predictions.size(0)
+            acc_list.append(num_correct/num_samples)
             
         return sum(loss_list)/len(loss_list),sum(acc_list)/len(acc_list)
     
-    def fit(self,dataLoader,batch_size,epoch):
+    def fit(self,dataLoader,batch_size,epoch,hidden_size):
         self.model.train()
         for i in range(epoch):
-            loss,acc = self.training_one_epoch(dataLoader,batch_size)
-            print('Epoch {0}/{1} loss: {2:6.2f} - accuracy: {3:6.2f}'.format(i,epoch,loss,acc))
+            loss,acc = self.training_one_epoch(dataLoader,batch_size,hidden_size)
+            self.scheduler.step(loss)
+            print('Epoch {0}/{1} loss: {2:6.2f} - accuracy{3:6.2f}'.format(i+1,epoch,loss,acc))
+            
+            
+    def accuracy(self,loader):
+        num_correct = 0
+        num_samples = 0
+        self.model.eval()
+        
+        with torch.no_grad():
+            for x, y in loader:
+                x = x.to(device=device)
+                y = y.to(device=device)
+    
+                scores = self.model(x)
+                _, predictions = scores.max(1)  # first is value, second is index, we need index
+                num_correct += (predictions == y).sum()
+                num_samples += predictions.size(0)
+            print('Got {0}/{1} with accuracy {0}/{1}*100'.format(num_correct,num_samples))
+        self.model.train()
             
     def validation(self,dataset):  # for validation set
         val_loader = DataLoader(dataset,batch_size=len(dataset),shuffle=False)
@@ -432,13 +521,28 @@ class Estimator(object):
 #training_set, validation_set, testing_set = random_split(data_torch,(200,5,4))
 training_set, testing_set = random_split(data_torch,(170,39))
         
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 # Starting to work
-data_torch_training_loader = DataLoader(training_set,batch_size=10,shuffle=True,drop_last=True)
-model = GRU_immuno(seq_len=191, hidden_size=100, batch_size=10, input_size=20, num_layers=3, bi=True)
-clf = Estimator(model,optimizer=torch.optim.Adam(model.parameters(), lr=0.001, weight_decay = 0.001),loss_f=nn.CrossEntropyLoss())         
-clf.fit(data_torch_training_loader,10,5)   
-clf.prediction(testing_set)     
+data_torch_training_loader = DataLoader(training_set,batch_size=64,shuffle=True,drop_last=True)
+data_torch_testing_loader = DataLoader(testing_set,batch_size=64,shuffle=True,drop_last=True)
+encoder = Encoder(input_size=20,hidden_size=200,num_layers=3).to(device)
+decoder = Decoder(hidden_size=200,num_layers=1).to(device)
+
+model = GRU_immuno(encoder, decoder, target_len=50, hidden_size=200, linear_hidden_size=200).to(device)
+
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay = 0.001)
+scheduler = scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
+    optimizer, factor=0.1, patience=2, verbose=True)
+# if it observe a non-decreasing loss, give you another (patience-1) more chances, if still not decrease, will reduce 
+# learning rate to factor*learning rate
+
+clf = Estimator(model,optimizer=optimizer,
+                scheduler = scheduler,
+                loss_f=nn.CrossEntropyLoss(),device=device) 
+        
+clf.fit(data_torch_training_loader,batch_size=64,epoch=5,hidden_size=200)   
+   
         
             
             
