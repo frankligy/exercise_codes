@@ -86,11 +86,11 @@ seq1_contact = []
 seq2_contact = []
 for counter in dic1.values():
     for k,v in counter.items():
-        if v > 10: seq1_contact.append(seq1[k])
+        if v > 1: seq1_contact.append(seq1[k])
 
 for counter in dic2.values():
     for k,v in counter.items():
-        if v > 10: seq2_contact.append(seq2[k])
+        if v > 1: seq2_contact.append(seq2[k])
 
 
 # load 40 AACP
