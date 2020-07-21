@@ -20,6 +20,8 @@ from torch.nn.utils.rnn import pad_sequence
 import torch.nn as nn
 import torch.nn.functional as F
 
+from prettytable import PrettyTable
+
 def clean_series(series):  # give a pandas series
     
     if series.dtype == object:  # pandas will store str as object since string has variable length, you can use astype('|S')
@@ -478,7 +480,17 @@ class Estimator(object):
         return auc
                 
             
-          
+def count_parameters(model):
+    table = PrettyTable(['Modules','Parameters'])
+    total_params = 0
+    for name,parameter in model.named_parameters():
+        if not parameter.requires_grad: continue
+        param = parameter.numel()
+        table.add_row([name,param])
+        total_params += param
+    print(table)
+    print('Total Trainable Params:{0}'.format(total_params))
+        
     
     
 
@@ -510,22 +522,52 @@ if __name__ == '__main__':
     
     model = GRU_immuno(encoder, decoder, target_len=30, hidden_size=50, linear_hidden_size=50).to(device)
     
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.001, weight_decay = 0.001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     scheduler = scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
         optimizer, factor=0.1, patience=2, verbose=True)
     # if it observe a non-decreasing loss, give you another (patience-1) more chances, if still not decrease, will reduce 
     # learning rate to factor*learning rate
+    loss_f=nn.CrossEntropyLoss()
+    target0 = torch.randn([64,1,50]).to(device)
     
-    clf = Estimator(model,optimizer=optimizer,
-                    scheduler = scheduler,
-                    loss_f=nn.CrossEntropyLoss(),device=device) 
+    num_epochs = 10
+    for epoch in range(num_epochs):
+
+        for idx,(X,y) in enumerate(data_torch_training_loader):
+            loss_list = []
+            acc_list = []
+            X,y = X.float().to(device),y.long().to(device)
+            optimizer.zero_grad()
             
-    clf.fit(data_torch_training_loader,batch_size=64,epoch=10,hidden_size=50) 
+            y_pred = model(X,target0)
+            loss = loss_f(y_pred,y)
+            loss.backward()
+            optimizer.step()
+            loss_list.append(loss.item())
+            
+            num_correct = 0
+            num_samples = 0
+            _,predictions = y_pred.max(1)
+
+            num_correct += (predictions == y).sum()  # will generate a 0-D tensor, tensor(49), float() to convert it
+
+            num_samples  += predictions.size(0)
+
+            acc_list.append(float(num_correct)/float(num_samples)*100)
+            
+            loss,acc = sum(loss_list)/len(loss_list),sum(acc_list)/len(acc_list)
     
-    torch.save(model,'.')
+        scheduler.step(loss)
+        print('Epoch {0}/{1} loss: {2:6.2f} - accuracy{3:6.2f}%'.format(epoch+1,num_epochs,loss,acc))
+        
+
+
     
     end_time = time.time()
     print('Consumed {0} seconds'.format(end_time-start_time))
+    
+    
+
     
     
     
