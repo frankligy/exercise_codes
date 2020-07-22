@@ -13,8 +13,11 @@ import json
 import collections
 import os
 import time
+import random
+import itertools
+from Bio.SubsMat import MatrixInfo
 
-from torch.utils.data import Dataset, DataLoader, random_split
+from torch.utils.data import Dataset, DataLoader, random_split,Subset
 import torch
 from torch.nn.utils.rnn import pad_sequence
 import torch.nn as nn
@@ -50,8 +53,32 @@ def clean_data_frame(data):  # give a pandas dataFrame
     
     return data_clean
     
+
+
     
-    
+def clean_hla(data_clean):
+    cond = []
+    hla = data_clean['HLA']
+    for i in hla:
+        if not ':' in i: cond.append(False)
+        else: cond.append(True)
+    data_clean = data_clean.join(pd.Series(cond,name='cond'))
+    data_clean2 = data_clean.loc[data_clean[cond]]
+    data_clean2 = data_clean2.set_index(pd.Index(np.arange(data_clean2.shape[0])))
+    return data_clean2
+
+def convert_hla(data_clean2):
+    hla = data_clean2['HLA']
+    new = []
+    for i in hla:
+        if not '*' in i: 
+            new.append(i[0:5]+'*'+i[5:])
+        else:
+            new.append(i)
+    data_clean2.update({'HLA':[new]})
+    return data_clean2
+            
+
         
 def read_hla(path):
     dic = {}
@@ -233,7 +260,7 @@ class my_dataset(Dataset):
         for i in range(self.original.shape[0]):
             whole = self.original.iloc[i]['whole']
             #print(whole)
-            onehot = torch.from_numpy(my_dataset.onehot_peptide(whole)) # length*20
+            onehot = torch.from_numpy(my_dataset.encode_peptide(whole)) # length*20
             #print(onehot,onehot.size(),onehot[0,:])
             tmp.append(onehot)
         #print(tmp[0][0,:])
@@ -247,7 +274,7 @@ class my_dataset(Dataset):
         
     
     @staticmethod
-    def onehot_peptide(pep):
+    def encode_peptide(pep):
         result = np.zeros([20,len(pep)])
         for i in range(result.shape[1]):
             
@@ -285,6 +312,68 @@ class my_dataset(Dataset):
         
         return result
         
+    @staticmethod
+    def blosum50_aa(a):
+        a = a.upper()
+        transform = {
+        'A':0,
+        'R':1,
+        'N':2,
+        'D':3,
+        'C':4,
+        'Q':5,
+        'E':6,
+        'G':7,
+        'H':8,
+        'I':9,
+        'L':10,
+        'K':11,
+        'M':12,
+        'F':13,
+        'P':14,
+        'S':15,
+        'T':16,
+        'W':17,
+        'Y':18,
+        'V':19,
+        }
+        transform_rev = {
+        0:'A',
+        1:'R',
+        2:'N',
+        3:'D',
+        4:'C',
+        5:'Q',
+        6:'E',
+        7:'G',
+        8:'H',
+        9:'I',
+        10:'L',
+        11:'K',
+        12:'M',
+        13:'F',
+        14:'P',
+        15:'S',
+        16:'T',
+        17:'W',
+        18:'Y',
+        19:'V',
+        }
+        dic = MatrixInfo.blosum50
+
+        matrix = np.zeros([20,20])
+        for i in matrix.shape[0]:
+            for j in matrix.shape[1]:
+                matrix[i,j] = dic[(transform_rev[i],transform_rev[j])] 
+                
+                
+        return matrix[:,transform[a]]
+        
+        
+        
+        
+        
+
         
 
 
@@ -395,89 +484,7 @@ class GRU_immuno(nn.Module):
         
         
             
-            
-        
 
-
-
-        
-        
-        
-class Estimator(object):
-    def __init__(self,model,optimizer,scheduler,loss_f,device):
-        self.model = model
-        self.optimizer = optimizer
-        self.scheduler = scheduler
-        self.loss_f = loss_f
-        self.device = device
-        
-    def training_one_epoch(self,dataLoader,batch_size,hidden_size):
-        loss_list = []
-        acc_list = []
-        for idx,(X,y) in enumerate(dataLoader):
-            X,y = X.float().to(device),y.long().to(device)
-            self.optimizer.zero_grad()
-            
-            y_pred = self.model(X,torch.randn([batch_size,1,hidden_size]).to(device))
-            loss = self.loss_f(y_pred,y)
-            loss.backward()
-            self.optimizer.step()
-            loss_list.append(loss.item())
-            
-            num_correct = 0
-            num_samples = 0
-            _,predictions = y_pred.max(1)
-
-            num_correct += (predictions == y).sum()  # will generate a 0-D tensor, tensor(49), float() to convert it
-
-            num_samples  += predictions.size(0)
-
-            acc_list.append(float(num_correct)/float(num_samples)*100)
-            
-        return sum(loss_list)/len(loss_list),sum(acc_list)/len(acc_list)
-    
-    def fit(self,dataLoader,batch_size,epoch,hidden_size):
-        self.model.train()
-        for i in range(epoch):
-            loss,acc = self.training_one_epoch(dataLoader,batch_size,hidden_size)
-            self.scheduler.step(loss)
-            print('Epoch {0}/{1} loss: {2:6.2f} - accuracy{3:6.2f}%'.format(i+1,epoch,loss,acc))
-            
-            
-    def accuracy(self,loader):
-        num_correct = 0
-        num_samples = 0
-        self.model.eval()
-        
-        with torch.no_grad():
-            for x, y in loader:
-                x = x.to(device=device)
-                y = y.to(device=device)
-    
-                scores = self.model(x)
-                _, predictions = scores.max(1)  # first is value, second is index, we need index
-                num_correct += (predictions == y).sum()
-                num_samples += predictions.size(0)
-            print('Got {0}/{1} with accuracy {0}/{1}*100'.format(num_correct,num_samples))
-        self.model.train()
-            
-    def validation(self,dataset):  # for validation set
-        val_loader = DataLoader(dataset,batch_size=len(dataset),shuffle=False)
-        for idx,(X,y) in enumerate(val_loader):
-            y_pred = self.model(X)
-            y_pred_np = y_pred.data.numpy()
-            auc = roc_auc_score(y_pred_np,y.data.numpy())
-        return auc
-    
-    def prediction(self,dataset):  # for testing set
-        test_loader = DataLoader(dataset,batch_size=10,shuffle=True,drop_last=True)
-        for idx,(X,y) in enumerate(test_loader):
-            y_pred = self.model(X)
-            y_pred_np = (y_pred > 0.5).float().long().view(1,-1).squeeze(0).data.numpy()
-            y_label = y.long().data.numpy()
-            print(y_pred_np,y_label)
-            auc = roc_auc_score(y_pred_np,y_label)
-        return auc
                 
             
 def count_parameters(model):
@@ -490,7 +497,88 @@ def count_parameters(model):
         total_params += param
     print(table)
     print('Total Trainable Params:{0}'.format(total_params))
+
+    
+
+def shuffleTensor(t):
+    idx = torch.randperm(t.nelement())
+    t = t.view(-1)[idx].view(t.size())
+    return t
+
+def permuteAlongAxis(t,axis):
+    idx = torch.randperm(t.size()[axis])
+    t = t[idx,:,:]
+    return t
+    
+def balancedBinaryLoader(dataset,batch_size):
+    
+    dic = {'0':[],'1':[]}
+    for i in range(len(dataset)):
+        X = dataset[i][0]
+        y = dataset[i][1]
+        if y == 1: dic['1'].append(i)
+        elif y == 0: dic['0'].append(i)
         
+    #print(dic)
+    
+
+    
+    sample_size = batch_size // 2  # will be an int, make sure batch_size is an even number
+    
+    negative = Subset(dataset,dic['0']) # dataset.Subset object
+    positive = Subset(dataset,dic['1'])
+    # print(len(positive),type(positive)) 
+    
+    negative_loader = DataLoader(negative,batch_size=sample_size,shuffle=True,drop_last=True)
+    positive_loader = DataLoader(positive,batch_size=sample_size,shuffle=True,drop_last=True)
+    
+
+
+
+    neg_chunks_X = []
+    neg_chunks_y = []
+    for idx,(X,y) in enumerate(negative_loader):
+        neg_chunks_X.append(X)
+        neg_chunks_y.append(y)
+
+    
+    pos_chunks_X = []
+    pos_chunks_y = []
+    for idx,(X,y) in enumerate(positive_loader):
+        pos_chunks_X.append(X)
+        pos_chunks_y.append(y)
+
+    
+    pos_chunks_X_cycle = pos_chunks_X * 10
+    pos_chunks_y_cycle = pos_chunks_y * 10
+
+
+    chunks_X_list = []
+    chunks_y_list = []    
+    for i in range(len(neg_chunks_X)):
+        chunks_X = torch.cat([neg_chunks_X[i],pos_chunks_X_cycle[i]],dim=0)
+        chunks_y = torch.cat([neg_chunks_y[i],pos_chunks_y_cycle[i]],dim=0)
+        chunks_X_list.append(chunks_X)
+        chunks_y_list.append(chunks_y)
+        
+    
+        
+
+    
+    loader = zip(chunks_X_list,chunks_y_list)
+    return loader
+        
+        
+        
+    
+    
+    
+
+    
+    
+    
+    
+    
     
     
 
@@ -515,8 +603,12 @@ if __name__ == '__main__':
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
     # Starting to work
-    data_torch_training_loader = DataLoader(training_set,batch_size=64,shuffle=True,drop_last=True)
-    data_torch_testing_loader = DataLoader(testing_set,batch_size=64,shuffle=True,drop_last=True)
+    # data_torch_training_loader = DataLoader(training_set,batch_size=512,shuffle=True,drop_last=True)
+    # data_torch_testing_loader = DataLoader(testing_set,batch_size=512,shuffle=True,drop_last=True)
+    
+    data_torch_training_loader = balancedBinaryLoader(training_set,batch_size=64)
+    
+    
     encoder = Encoder(input_size=20,hidden_size=50,num_layers=3).to(device)
     decoder = Decoder(hidden_size=50,num_layers=1).to(device)
     
@@ -530,13 +622,14 @@ if __name__ == '__main__':
     loss_f=nn.CrossEntropyLoss()
     target0 = torch.randn([64,1,50]).to(device)
     
-    num_epochs = 10
+    num_epochs = 5
     for epoch in range(num_epochs):
 
-        for idx,(X,y) in enumerate(data_torch_training_loader):
+        for i in data_torch_training_loader:
             loss_list = []
             acc_list = []
-            X,y = X.float().to(device),y.long().to(device)
+            X,y = i[0].float().to(device),i[1].long().to(device)
+            #print(X,y)
             optimizer.zero_grad()
             
             y_pred = model(X,target0)

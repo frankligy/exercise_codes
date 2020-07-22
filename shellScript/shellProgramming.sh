@@ -282,6 +282,7 @@ master_time_end=`date +%s`
 module load anaconda3   # only on cluster
 proxy_on   # only on cluster, before creating new environment or install packages
 conda create -n env python = 3   # = means fuzzy match, == means exact match
+conda create -p /path/to/folder/env python = 3.6
 conda env list  # all the env
 conda init --all bash  # only on cluster
 conda/source activate env  # on cluster only use source
@@ -297,4 +298,15 @@ conda config --add channels bioconda
 conda config --add channels conda-forge   # these are settings for anaocnda, not specific environment
 conda install -c bioconda scanpy
 conda install -c  anaconda git
+
+
+
+
+# chmod
+chmod -R 777 folder   # change the permission of the whole folder
+umask 022 
+umask 0022
+
+# so by default, a newly-created file would have 666 permission, newly-created folder will have 777 permission, for example
+# umask = 022, then a newly-created file would have 644 permission (666-022), newly-created folder will have 755 permission (777-022)
 
