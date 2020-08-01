@@ -61,12 +61,23 @@ temp=`expr 2 \* 3`   # \* means multiply, / means divide, % means take remainder
 
 
 # array
-my_array=(4 5 6)
-echo ${my_array}  # only return the my_array[0], just 4
-echo ${my_array[2]} # will return 6
-my_array[2]=7   # change the value
-my_array[3]=8   # add new value
-unset my_array[2]  # then the array will be (4 5 NULL 8)
+
+# index array
+declare -a my_index_array
+my_index_array+=(item1 item2)
+echo ${my_index_array[@]}   # print all items
+echo ${#my_index_array[@]}  # get the size
+echo ${my_index_array[*]}   # print all items
+echo ${my_index_array[1]}    # shell is 0-based
+for i in "${my_index_array[@]}"; do echo "$i"; done   # iterate all items
+for index in "${!my_index_array[@]}"; do echo "$index"; done   # iterate all indices
+unset my_index_array[0]   # delete one item, but its index won't be replaced
+
+# associated array
+# https://linuxconfig.org/how-to-use-arrays-in-bash-script
+
+
+
 
 # string
 x="pattern"
@@ -221,9 +232,26 @@ esac
 # example 5
 if [ -z "$str1" ]     # whether it is empty string
 if [ -n "$str2" ]     # whether it is not empty string
-if [ "$str1" = "$str2" ]
+if [ "$str1" == "$str2" ]
 if [ "$str1" != "$str2" ]
-if [[ "$str1" =~ "str2" ]]      
+if [[ "$str1" =~ "str2" ]]   
+
+# a real example for integrating example4 and example5, determine if a substring occur in a string
+i='TCGA-E2-A10A-01A-21R-A115-07.qsort'
+j='TCGA-E2-A10A'
+
+## method1
+if grep -q "$j" <<< "$i"; then echo 'hi'; fi    # must use double quotation
+## method2
+​if [[ "$i" =~ .*"$j".* ]]; then echo 'hi'; fi
+## method3
+if [[ "$i" == *"$j"* ]]; then echo 'hi'; fi
+## method4
+​case ${i} in
+	*"${j}"*)
+	echo 'hi'
+esac
+
 
 
 # function

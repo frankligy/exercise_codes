@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed Jul 15 18:07:09 2020
+Created on Thu Jul 23 10:01:40 2020
 
 @author: ligk2e
 """
@@ -102,10 +102,9 @@ def read_hla(path):
                     flag = False
     return dic
     #{'hla':[seq1,seq2],}
-                    
-                
-                    
-                
+    
+    
+    
 def get_imgt_contact_site(path,hla,hla_seq):
     hla_short = ''.join(hla[4:].split(':')).replace('*','')
     # pre-process json file
@@ -240,41 +239,84 @@ def rescue_unknown_hla(hla,dic_inventory):
         distance = [abs(int(first2)-int(i)) for i in small_category]   
         optimal = min(zip(small_category,distance),key=lambda x:x[1])[0]
         return 'HLA-' + str(type_) + '*' + str(optimal) + ':' + str(big_category[optimal][0])
-        
     
-class my_dataset(Dataset):
+
+class MyDataSet(Dataset):
     def __init__(self,original):
         self.original = original
         self.check_validity()
-        self.new_data = self.padded_to_max_len()   # it is a torch
-        self.label = self.get_Y()   # torch [1,209]
-
+        self.new_data = self.encode_peptide()
+        self.y = self.get_y()
         
     def __len__(self):
-        return self.original.shape[0]
+        return self.y.shape[1]
     
     def __getitem__(self,idx):
+        X = self.new_data[idx,:,:]
+        y = self.y[0,idx]
+        return (X,y)
+    
+    def encode_peptide(self):
+        whole = self.original['whole']
+        for_padding = []
+        for i in range(whole.shape[0]):
+            print(i)
+            length = len(whole[i])
+            result = np.zeros([length,20])
+            for j in range(len(whole[i])):   # iterate each amino acid
+                result[j,:] = MyDataSet.blosum50_aa(whole[i][j])
+            for_padding.append(torch.from_numpy(result).float())
+        # Here, we should have a list for_padding that [torch(length1*20),torch(length2*20),...]
 
         
-        return (self.new_data[idx],self.label[0,idx])
-    
-    def padded_to_max_len(self):
-        tmp = []
-        for i in range(self.original.shape[0]):
-            print(i)
-            whole = self.original.iloc[i]['whole']
-            #print(whole)
-            onehot = torch.from_numpy(my_dataset.encode_peptide(whole)) # length*20
-            #print(onehot,onehot.size(),onehot[0,:])
-            tmp.append(onehot)
-        #print(tmp[0][0,:])
-        stacked_equal_length = pad_sequence(tmp,batch_first=True)  #[number of item,length,20]
         
-        return stacked_equal_length
+        # padded = pad_sequence(for_padding,batch_first=True,padding_value= -1.0)
+        padded = self.padding(for_padding)
+        
+        
+        
+        # padded should be torch(40000,max_length,20)
+        return padded
     
-    def get_Y(self):
-        return torch.from_numpy(self.original['immunogenecity'].values).view(1,-1).float()
+    
+    def get_y(self):
+        y = torch.from_numpy(self.original['immunogenecity'].values).view(1,-1).float()  # torch(1,40000)
+        return y
+    
+
+    def padding(self,lis):   # accept for_padding
+        
+        # find max_length
+        max_length=max([torch.shape[0] for torch in lis])
+        
+        # padding
+        bucket = []
+        for item in lis:
+            length = item.shape[0]
+            gap = max_length - length
+            if gap % 2 == 0:  # even number
+                gapped_left, gapped_right = gap // 2, gap //2  # will be an int
+            else:  # odd number
+                if np.random.uniform() < 0.5:  # randomly decide which side will have one more padded value
+                    gapped_left = gap // 2
+                    gapped_right = gap - gapped_left
+                else:
+                    gapped_right = gap // 2
+                    gapped_left = gap - gapped_right
+                    
+            padding_left = torch.empty([gapped_left,20]).fill_(-1.0)
+            padding_right = torch.empty([gapped_right,20]).fill_(-1.0)
+            final = torch.cat([padding_left,item,padding_right],dim=0)
+            bucket.append(final)  
+        
+        # here we should have a list bucket that [torch(max_length*20),torch(max_length*20),...]
+        padded_version = torch.stack(bucket,dim=0)
+        
+        self.max_length = max_length
+        return padded_version
             
+                
+        
     def check_validity(self):
         cond = []
         for i in range(self.original.shape[0]):
@@ -284,51 +326,8 @@ class my_dataset(Dataset):
         self.original=self.original.join(pd.Series(cond,name='cond'))
         self.original=self.original.loc[self.original['cond']]
         self.original=self.original.drop(columns=['cond'])
-        self.original=self.original.set_index(pd.Index(np.arange(self.original.shape[0])))
-        
-            
+        self.original=self.original.set_index(pd.Index(np.arange(self.original.shape[0])))    
     
-    @staticmethod
-    def encode_peptide(pep):
-        result = np.zeros([20,len(pep)])
-        for i in range(result.shape[1]):
-            try:            
-                result[:,i] = my_dataset.blosum50_aa(pep[i])
-            except:
-                continue
-
-        return np.transpose(result)
-    
-    @staticmethod
-    def onehot_aa(a):
-        a = a.upper()
-        transform = {
-        'A':0,
-        'R':1,
-        'N':2,
-        'D':3,
-        'C':4,
-        'Q':5,
-        'E':6,
-        'G':7,
-        'H':8,
-        'I':9,
-        'L':10,
-        'K':11,
-        'M':12,
-        'F':13,
-        'P':14,
-        'S':15,
-        'T':16,
-        'W':17,
-        'Y':18,
-        'V':19,
-        }
-        mat = torch.eye(len(transform))
-        result = mat[transform[a],:]
-        
-        return result
-        
     @staticmethod
     def blosum50_aa(a):
         a = a.upper()
@@ -389,147 +388,82 @@ class my_dataset(Dataset):
                 
         return matrix[:,transform[a]]
         
+
+def calculate_conv2d_dimension(dim_in,padding,dilation,kernel,stride):
+    dim_out = (dim_in + 2*padding - dilation*(kernel-1) - 1) / stride + 1
+    return int(dim_out)  
+                
+
+class dilated_CNN(nn.Module):
+    def __init__(self,length,channel=1,filters=16,kernel=(10,20),stride=(1,1),padding=(0,0),dilation=(2,1),hidden=100):
+        super(dilated_CNN,self).__init__()
+        self.length = length
+        self.channel = channel
+        self.filters = filters
+        self.kernel = kernel
+        self.stride = stride
+        self.padding = padding
+        self.dilation = dilation
+        self.hidden = hidden
         
-        
-        
-        
+        self.layer1 = nn.Sequential(
+            nn.Conv2d(self.channel, self.filters, self.kernel, dilation=self.dilation),
+            nn.BatchNorm2d(self.filters),
+            nn.ReLU(),
+            nn.MaxPool2d((3,1),stride=self.stride)
+            )
 
         
-
-
-
-class Encoder(nn.Module):
-    def __init__(self,input_size,hidden_size,num_layers):
-        super(Encoder,self).__init__()
-        self.input_size = input_size
-        self.hidden_size = hidden_size
-        self.num_layers = num_layers
+        layer1_conv2d_output_H = calculate_conv2d_dimension(self.length, self.padding[0], self.dilation[0], self.kernel[0], 
+                                                            self.stride[0])
+        layer1_conv2d_output_W = calculate_conv2d_dimension(20, self.padding[1], self.dilation[1], self.kernel[1], 
+                                                            self.stride[1])    
         
-        self.gru = nn.GRU(self.input_size,self.hidden_size,num_layers=self.num_layers,
-                          bidirectional=True,batch_first=True)
+        layer1_maxpool2d_output_H = calculate_conv2d_dimension(layer1_conv2d_output_H,padding=0,dilation=1,kernel=3,stride=1)
+        layer1_maxpool2d_output_W = calculate_conv2d_dimension(layer1_conv2d_output_W,padding=0,dilation=1,kernel=1,stride=1)      
         
-    def forward(self,x): # shape of x: [batch,seq_len,input_size]
-
-        out,hn = self.gru(x)
-        return out,hn
-    
-    
-
-class Decoder(nn.Module):
-    def __init__(self,hidden_size,num_layers=1):
-        super(Decoder,self).__init__()
+        print((layer1_conv2d_output_H,layer1_conv2d_output_W),(layer1_maxpool2d_output_H,layer1_maxpool2d_output_W))
         
-        # self.encoder_out = encoder_out
-        # self.encoder_hn = encoder_hn
+        self.layer2 = nn.Sequential(
+            nn.Conv2d(self.filters,self.filters, kernel_size=(10,1),dilation=self.dilation),
+            nn.BatchNorm2d(self.filters),
+            nn.ReLU(),
+            nn.MaxPool2d((3,1),stride=self.stride)
+            )
         
-        self.output_size = hidden_size   # encoder_hidden_size
-        self.input_size = hidden_size*2 +  self.output_size  # 2 * encoder_hidden_size
-        self.hidden_size = self.output_size
+        layer2_conv2d_output_H = calculate_conv2d_dimension(layer1_maxpool2d_output_H, self.padding[0], 
+                                                            self.dilation[0], 10, self.stride[0])
+        layer2_conv2d_output_W = calculate_conv2d_dimension(layer1_maxpool2d_output_W, self.padding[1], 
+                                                            self.dilation[1], 1, self.stride[1])
         
-        self.gru = nn.GRU(self.input_size,self.hidden_size,num_layers=1,bidirectional=False,batch_first=True)
+        layer2_maxpool2d_output_H = calculate_conv2d_dimension(layer2_conv2d_output_H,padding=0,dilation=1,kernel=3,
+                                                               stride=1)
+        layer2_maxpool2d_output_W = calculate_conv2d_dimension(layer2_conv2d_output_W,padding=0,dilation=1,kernel=1,
+                                                               stride=1)
         
-        self.energy = nn.Linear(self.input_size,1)
-        self.Softmax = nn.Softmax(dim=2)
-        self.relu = nn.ReLU()
+        print((layer2_conv2d_output_H,layer2_conv2d_output_W),(layer2_maxpool2d_output_H,layer2_maxpool2d_output_W))
         
-    def forward(self,x,encoder_out,encoder_hn): # shape of x : [batch_size,1,self.output_size]
-    
-        weights = []   # store softmax(Eij) value
-        #print('encoder_out:',encoder_out.size())
-        for i in range(encoder_out.shape[1]):
-            tmp = x.transpose(0,1)   # change the shape of x to [1,batch_size,output_size] for torch.cat
-            # print('tmp:',tmp.size())
-            # print('encoder_out[:,i,:]:',encoder_out[:,i,:].size())
-            
-            # then remember the shape of encoder_out[i] is: [1,batch_size,2*encoder_hidden_size]
-            E = self.relu(self.energy(torch.cat((tmp,encoder_out[:,i,:].unsqueeze(0)),dim=2)))  # [1,batch_size,1]
-            weights.append(E)
-            
-        stacked_weights = torch.cat(weights,dim=2)  # [1,batch_size,seq_len]
-        normalized_weights = self.Softmax(stacked_weights) # didn't change dimensions
-        context_vector = torch.bmm(normalized_weights.transpose(0,1),encoder_out)  
-        # [batch,1,seq_Len] * [batch,seq_len,2*encoder_hidden_size] = [batch,1,2*encoder_hidden_size]
+        self.layer3 = nn.Sequential(
+            nn.Dropout(p=0.25),
+            nn.Linear(self.filters * layer2_maxpool2d_output_H * layer2_maxpool2d_output_W, self.hidden),
+            nn.Dropout(p=0.25),
+            nn.ReLU(),
+            nn.Linear(self.hidden,2)
+        )
         
-        out,hn = self.gru(torch.cat((x,context_vector),dim=2))
-        
-        return out,hn
-    
-class GRU_immuno(nn.Module):
-    def __init__(self,encoder,decoder,target_len,hidden_size,linear_hidden_size,p=0.25):
-        super(GRU_immuno,self).__init__()
-        self.encoder = encoder
-        self.decoder = decoder
-        self.target_len = target_len
-        self.hidden_size = hidden_size
-        self.linear_hidden_size = linear_hidden_size
-        
-        self.fc1 = nn.Linear(self.target_len*self.hidden_size,linear_hidden_size)
-        self.dropout = nn.Dropout(p)
-        self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(self.linear_hidden_size,2)
         self.Sigmoid = nn.Sigmoid()
         
-    def forward(self,input_data,target0):  # [batch,seq_len,input_size]  # target0 : [batch,1,outsize/hiddensize]
-         
-        encoder_out,encoder_hn = self.encoder(input_data)
-        #print('encoder_out:',encoder_out.size())
-        
-        running_hn = encoder_hn
-        x = target0
-        
-        batch_size = encoder_out.shape[0]
-        hidden_size = encoder_hn.shape[2]
-        
-        result = torch.zeros([self.target_len,batch_size,hidden_size])
-        for i in range(self.target_len):
-            decoder_out,decoder_hn = self.decoder(x,encoder_out,running_hn)
-            # dimention of decoder_out: [batch,1,hidden]
-            # print('decoder',decoder_out.size())
-            # print('result',result[i].size())
-            result[i] = decoder_out.transpose(0,1).squeeze(0)
-            x = decoder_out
-            running_hn = decoder_hn
-        
-        # shape of result : [target_len,batch_size,hidden_size]
-            
-        result_go = result.reshape(result.shape[1],-1)
-        out = self.relu(self.dropout(self.fc1(result_go)))
-        out = self.fc2(out)
-        out = self.Sigmoid(out)   # out: [batch,2]
-            
+    def forward(self,x):   # x: [batch,channel,h=max_length,w=20]
+        out = self.layer1(x)
+
+        out = self.layer2(out)
+        out = out.view(out.shape[0],-1)
+
+        out = self.layer3(out)
+        out = self.Sigmoid(out)
         return out
-            
-            
         
-        
-        
-            
 
-                
-            
-def count_parameters(model):
-    table = PrettyTable(['Modules','Parameters'])
-    total_params = 0
-    for name,parameter in model.named_parameters():
-        if not parameter.requires_grad: continue
-        param = parameter.numel()
-        table.add_row([name,param])
-        total_params += param
-    print(table)
-    print('Total Trainable Params:{0}'.format(total_params))
-
-    
-
-def shuffleTensor(t):
-    idx = torch.randperm(t.nelement())
-    t = t.view(-1)[idx].view(t.size())
-    return t
-
-def permuteAlongAxis(t,axis):
-    idx = torch.randperm(t.size()[axis])
-    t = t[idx,:,:]
-    return t
-    
 def balancedBinaryLoader(dataset,batch_size):
     
     dic = {'0':[],'1':[]}
@@ -586,22 +520,7 @@ def balancedBinaryLoader(dataset,batch_size):
 
     
     loader = list(zip(chunks_X_list,chunks_y_list)) # zip can only be iterated once
-    return loader
-        
-        
-        
-    
-    
-    
-
-    
-    
-    
-    
-    
-    
-    
-
+    return loader    
 
 if __name__ == '__main__':
     
@@ -618,7 +537,8 @@ if __name__ == '__main__':
     data_whole = get_whole_seq('/Users/ligk2e/Desktop/NeoAntigenWorkflow/immunogenecity/imgt_contact',data_clean)
     
     
-    data_torch = my_dataset(data_whole)
+    data_torch = MyDataSet(data_whole)
+
     #training_set, validation_set, testing_set = random_split(data_torch,(200,5,4))
     training_set, testing_set = random_split(data_torch,(40000,3519))
             
@@ -631,10 +551,7 @@ if __name__ == '__main__':
     data_torch_training_loader = balancedBinaryLoader(training_set,batch_size=64)
     
     
-    encoder = Encoder(input_size=20,hidden_size=50,num_layers=3).to(device)
-    decoder = Decoder(hidden_size=50,num_layers=1).to(device)
-    
-    model = GRU_immuno(encoder, decoder, target_len=30, hidden_size=50, linear_hidden_size=50).to(device)
+    model = dilated_CNN(data_torch.max_length)
     
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     scheduler = scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
@@ -642,20 +559,21 @@ if __name__ == '__main__':
     # if it observe a non-decreasing loss, give you another (patience-1) more chances, if still not decrease, will reduce 
     # learning rate to factor*learning rate
     loss_f=nn.CrossEntropyLoss()
-    target0 = torch.randn([64,1,50]).to(device)
+
     
     num_epochs = 5
     for epoch in range(num_epochs):
         loss_list = []
         acc_list = []
         for i in data_torch_training_loader:
-            print(i)
 
-            X,y = i[0].float().to(device),i[1].long().to(device)
+
+            X = i[0].unsqueeze(1).float().to(device)
+            y = i[1].long().to(device)
             #print(X.size(),y,size())
             optimizer.zero_grad()
             
-            y_pred = model(X,target0)
+            y_pred = model(X)
             loss = loss_f(y_pred,y)
             loss.backward()
             optimizer.step()
@@ -675,13 +593,34 @@ if __name__ == '__main__':
     
         scheduler.step(loss)
         print('Epoch {0}/{1} loss: {2:6.2f} - accuracy{3:6.2f}%'.format(epoch+1,num_epochs,loss,acc))
+        
+        
+                
+        
+                    
+            
+        
     
     
-
     
     
     
-
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     
