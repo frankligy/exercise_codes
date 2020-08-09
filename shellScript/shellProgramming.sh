@@ -83,6 +83,11 @@ unset my_index_array[0]   # delete one item, but its index won't be replaced
 x="pattern"
 echo ${#x}  # return the length of string
 echo ${x:2:5}  # slicing the string
+task='0205'
+task1=${task:0:2}    #02
+task2=${task:2:4}    #05
+
+echo ${text//[[:space:]]}   # remove all white space from a string
 
 
 # aforementioned variables are only alive in this shell
@@ -278,6 +283,7 @@ getSum $n1 $n2
 ./test.sh > log.dat 2>&1    # 0 means stdin, 1 means stdout, 2 means stderr, it means direct stderr to stdout, which is log.dat as well.
 
 
+
 # parse the arguments
 usage="Usage: $0 -S sample_name -I input_dir -O output_dir"
 while getopts S:I:O: flag; do
@@ -300,6 +306,8 @@ done
 shift $(( OPTIND - 1));
 
 # calculate running time
+time your command
+
 master_time_start=`date +%s`
 # your program
 master_time_end=`date +%s`
@@ -338,3 +346,19 @@ umask 0022
 # so by default, a newly-created file would have 666 permission, newly-created folder will have 777 permission, for example
 # umask = 022, then a newly-created file would have 644 permission (666-022), newly-created folder will have 755 permission (777-022)
 
+# sed 
+sed '/HLA-B44:01/d/' file   # delete the line containing 'HLA-B44:01'
+
+# sort
+sort -t ',' -k3,3 file   # sort by column3-column3
+
+# add one line at the begining
+{ echo "adding text"; cat $file; } > new.file  
+
+# change delimiter
+awk '$1=$1' FS="," OFS="\t" file
+
+
+# head and tail
+head -n -4  # exclude last 3 lines, ends at the 4th last line
+tail -n +4 # exclude first 3 lines, starts at the 4th line
