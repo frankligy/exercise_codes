@@ -82,10 +82,10 @@ unset my_index_array[0]   # delete one item, but its index won't be replaced
 # string
 x="pattern"
 echo ${#x}  # return the length of string
-echo ${x:2:5}  # slicing the string
+echo ${x:2:5}  # slicing the string, from position2, length=5, starting position is 0
 task='0205'
 task1=${task:0:2}    #02
-task2=${task:2:4}    #05
+task2=${task:2:2}    #05
 
 echo ${text//[[:space:]]}   # remove all white space from a string
 
@@ -357,8 +357,26 @@ sort -t ',' -k3,3 file   # sort by column3-column3
 
 # change delimiter
 awk '$1=$1' FS="," OFS="\t" file
+# concat two column
+awk '{print $4$5}' file
+# awk length filter
+awk 'length($4) < 8 print{$0}'
+# awk max value
+awk 'n < $0 {n=$0}END{print n}'
+# directly change to fasta, how to do formatted print
+cat hla2paratopeTable.txt | awk '{ printf ">%s\\n%s",$1,$2 }'
 
+# shuffle along rows
+shuf file
+
+# echo recognize escaping
+echo -e "hi\tIam\n"
 
 # head and tail
 head -n -4  # exclude last 3 lines, ends at the 4th last line
 tail -n +4 # exclude first 3 lines, starts at the 4th line
+
+# split by pattern
+csplit my_file '/pattern/+1' {n}   # each subfile from the beginning to the start of the matching line, not include the matching line, matching line will become the 
+# first line for next round of matching, we offset by 1 meaning include the matching line, shift the cursor forward by 1. n means repeat the matching n more times, if 
+# don't specify, it will proceed 1 time, 3 means do it 2 times again.

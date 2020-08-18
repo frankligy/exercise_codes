@@ -49,6 +49,7 @@ re.search(r'\b\w+(?=ing)',text)          # the match will be danc
 # 5. re.fullmatch()
 # 6. re.complile()
 # 7. in each method, there is an optional argument called flags, flags=re.I(ignore case), flags = re.M(multiple line matching)
+# 8. re.sub()
 
 
 # regex:
