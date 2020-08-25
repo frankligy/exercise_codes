@@ -573,15 +573,20 @@ with open('file.p','wb') as file1:    # BufferedReader object
 with open('file.p','rb') as file2:
     a = pickle.load(file2)
 
-###################################################    
+###################################################  
 import shelve
-with open('file') as db:   # DbfilenameShelf object
-    db['a'] = a
-    db['b'] = b
-    
-with open('file') as db:
-    a = db['a']
-    b = db['b']
+# save  
+s = shelve.open('/data/salomonis2/LabFiles/Frank-Li/immunogenecity/transformer/testing/testing11')
+s['y_pred'] = y_pred.detach().cpu().numpy()
+s['predictions'] = predictions.detach().cpu().numpy()
+s['y'] = y.detach().cpu().numpy()
+s.close()
+
+# load
+s = shelve.open('/Users/ligk2e/Desktop/immunogenecity/testing12')
+y_pred = s['y_pred']
+predictions = s['predictions']
+y = s['y']
     
         
     

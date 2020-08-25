@@ -14,32 +14,51 @@ Created on Thu May 21 16:11:25 2020
 
 ################ Chapter1: tensor object ############################
 import torch
+import numpy as np
 
 
 '''
-float: single precision value, 32bit, up to 7 significant point
-double: double precision value, 64bit, up to 14 significant point
+float: single precision value, 32bit, up to 7 significant point, float32
+double: double precision value, 64bit, up to 14 significant point, float64
 short: 16bit
 int: 32bit
 long: 64bit
 
 '''
- 
-x = torch.empty(5, 3)   # uninitialized matrix, temperary memory value will be assigned to it
-x = torch.zeros(5, 3, dtype=torch.long)   # random initialized matrix
-x = torch.randn(4, 4)
-x = torch.tensor([2,3])
-
-y = x.view(16)
-z = x.view(-1, 8)  # the size -1 is inferred from other dimensions
-print(x.size(), y.size(), z.size())
-
-
-# convert between numpy.darray and torch.tensor, they are connected, change one will also change another one.
-b = torch.from_numpy(x)   # convert ndarray x to torch.tensor b
-b = x.numpy()              # convert tensor to x
 
 device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')  # device object
+
+##### Initializing tensor #############
+my_tensor = torch.tensor([[1,2,3],[4,5,6]],dtype=torch.float32, device='cpu',requires_grad=True)
+
+x = torch.empty([5, 3]).fill_(-1.0)   # uninitialized matrix, temperary memory value will be assigned to it
+x = torch.zeros(5, 3, dtype=torch.long)   
+x = torch.randn(4, 4)     # random initialized matrix in normal distribution
+x = torch.rand(4,4)  # random initialize in uniform distribution [0,1]
+
+x = torch.arange(start=0,end=5,step=1)
+x = torch.linspace(start=0,end=5,steps=10)   # steps is how many amount of number in this list
+x = torch.diag(torch.ones(3))
+x.bool()
+x.short()
+x.float()
+x.long()
+x.double()
+x.half()
+
+np_array = np.zeros = ([5,5])
+tensor = torch.from_numpy(np_array)
+np_array_back = tensor.numpy()
+
+
+
+####### Math & comparison operations ########################
+
+
+
+
+
+
 
 
 
