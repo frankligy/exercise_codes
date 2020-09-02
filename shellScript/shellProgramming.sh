@@ -365,6 +365,8 @@ awk 'length($4) < 8 print{$0}'
 awk 'n < $0 {n=$0}END{print n}'
 # directly change to fasta, how to do formatted print
 cat hla2paratopeTable.txt | awk '{ printf ">%s\\n%s",$1,$2 }'
+# convert horizotal one line to vertical layout
+​cat counts.TCGA-BRCA.txt | head -n 1 | awk '{for(i=0;i<=NF;i++){print $i}}'
 
 # shuffle along rows
 shuf file
