@@ -63,7 +63,7 @@ temp=`expr 2 \* 3`   # \* means multiply, / means divide, % means take remainder
 # array
 
 # index array
-declare -a my_index_array
+declare -a my_index_array    # declare -p a     to inspect the type of variable a
 my_index_array+=(item1 item2)
 echo ${my_index_array[@]}   # print all items
 echo ${#my_index_array[@]}  # get the size
@@ -347,7 +347,7 @@ umask 0022
 # umask = 022, then a newly-created file would have 644 permission (666-022), newly-created folder will have 755 permission (777-022)
 
 # sed 
-sed '/HLA-B44:01/d/' file   # delete the line containing 'HLA-B44:01'
+sed '/HLA-B44:01/d' file   # delete the line containing 'HLA-B44:01'
 
 # sort
 sort -t ',' -k3,3 file   # sort by column3-column3
