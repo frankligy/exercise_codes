@@ -367,6 +367,9 @@ awk 'n < $0 {n=$0}END{print n}'
 cat hla2paratopeTable.txt | awk '{ printf ">%s\\n%s",$1,$2 }'
 # convert horizotal one line to vertical layout
 ​cat counts.TCGA-BRCA.txt | head -n 1 | awk '{for(i=0;i<=NF;i++){print $i}}'
+# compute count/sum
+cat tmp5.txt | while read line; do cat $line | awk 'BEGIN{FS="\t";count=0;}{if(NR>1){count+=$11}}END{print count}'; done > tmp12.txt
+
 
 # shuffle along rows
 shuf file
