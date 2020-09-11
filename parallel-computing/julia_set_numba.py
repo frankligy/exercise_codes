@@ -1,6 +1,16 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# ## Platform
+# 
+# 1. OSU super computer, Owen cluster, access through ondemand desktop.
+# 2. Launching jupyter notebook and requests 28 gpu codes with latest cuda version
+# 3. here I modified the code from rendering mandelbrot to julia set
+# 4. excecution time comparion is at the bottom
+# 5. the detailed implemetation is shown below
+
+# ## Let's render Julia set using basic Python syntax
+
 # In[11]:
 
 
@@ -9,26 +19,22 @@ from pylab import imshow, show    # show plot from 2D array
 from timeit import default_timer as timer    # execution time for a small snippet of code, otherwise use time.time()
 
 
-# In[6]:
+# In[40]:
 
 
-def mandel(x, y, max_iters):
-  """
-    Given the real and imaginary parts of a complex number,
-    determine if it is a candidate for membership in the Mandelbrot
-    set given a fixed number of iterations.
-  """
-  c = complex(x, y)
-  z = 0.0j
+def julia(x, y, max_iters):
+
+  z = complex(x, y)   # here 
+  c = complex(-0.35, 0.65)
   for i in range(max_iters):
     z = z*z + c
-    if (z.real*z.real + z.imag*z.imag) >= 4:
+    if abs(z) >= 4:
       return i
 
   return max_iters
 
 
-# In[3]:
+# In[42]:
 
 
 def create_fractal(min_x, max_x, min_y, max_y, image, iters):
@@ -42,11 +48,11 @@ def create_fractal(min_x, max_x, min_y, max_y, image, iters):
     real = min_x + x * pixel_size_x
     for y in range(height):
       imag = min_y + y * pixel_size_y
-      color = mandel(real, imag, iters)
+      color = julia(real, imag, iters)
       image[y, x] = color
 
 
-# In[5]:
+# In[43]:
 
 
 image = np.zeros((1024, 1536), dtype = np.uint8)
@@ -54,33 +60,27 @@ start = timer()
 create_fractal(-2.0, 1.0, -1.0, 1.0, image, 20) 
 dt = timer() - start
 
-print("Mandelbrot created in %f s" % dt)
+print("julia created in %f s" % dt)
 imshow(image)
 show()
 
 
-# In[6]:
+# ## Let's render julia set using compiled python codes
 
-
-create_fractal(-2.0, -1.7, -0.1, 0.1, image, 20) 
-imshow(image)
-show()
-
-
-# In[9]:
+# In[44]:
 
 
 from numba import jit
 
 @jit
-def mandel(x, y, max_iters):
+def julia(x, y, max_iters):
   """
     Given the real and imaginary parts of a complex number,
     determine if it is a candidate for membership in the Mandelbrot
     set given a fixed number of iterations.
   """
-  c = complex(x, y)
-  z = 0.0j
+  z = complex(x, y)
+  c = complex(-0.35, 0.65)
   for i in range(max_iters):
     z = z*z + c
     if (z.real*z.real + z.imag*z.imag) >= 4:
@@ -100,11 +100,11 @@ def create_fractal(min_x, max_x, min_y, max_y, image, iters):
     real = min_x + x * pixel_size_x
     for y in range(height):
       imag = min_y + y * pixel_size_y
-      color = mandel(real, imag, iters)
+      color = julia(real, imag, iters)
       image[y, x] = color
 
 
-# In[11]:
+# In[45]:
 
 
 image = np.zeros((1024, 1536), dtype = np.uint8)
@@ -112,29 +112,31 @@ start = timer()
 create_fractal(-2.0, 1.0, -1.0, 1.0, image, 20) 
 dt = timer() - start
 
-print("Mandelbrot created in %f s" % dt)
+print("julia created in %f s" % dt)
 imshow(image)
 show()
 
 
-# In[4]:
+# ## Let's render julia set using python CUDA on GPU
+
+# In[46]:
 
 
 from numba import cuda
 from numba import *
 
 
-# In[7]:
+# In[47]:
 
 
-mandel_gpu = cuda.jit(restype=uint32, argtypes=[f8, f8, uint32], device=True)(mandel)
+julia_gpu = cuda.jit(restype=uint32, argtypes=[f8, f8, uint32], device=True)(julia)
 
 
-# In[8]:
+# In[48]:
 
 
 @cuda.jit(argtypes=[f8, f8, f8, f8, uint8[:,:], uint32])
-def mandel_kernel(min_x, max_x, min_y, max_y, image, iters):
+def julia_kernel(min_x, max_x, min_y, max_y, image, iters):
   height = image.shape[0]
   width = image.shape[1]
 
@@ -149,10 +151,10 @@ def mandel_kernel(min_x, max_x, min_y, max_y, image, iters):
     real = min_x + x * pixel_size_x
     for y in range(startY, height, gridY):
       imag = min_y + y * pixel_size_y 
-      image[y, x] = mandel_gpu(real, imag, iters)
+      image[y, x] = julia_gpu(real, imag, iters)
 
 
-# In[12]:
+# In[49]:
 
 
 gimage = np.zeros((1024, 1536), dtype = np.uint8)
@@ -161,15 +163,22 @@ griddim = (32,16)
 
 start = timer()
 d_image = cuda.to_device(gimage)
-mandel_kernel[griddim, blockdim](-2.0, 1.0, -1.0, 1.0, d_image, 20) 
+mandel_kernel[griddim, blockdim](-5.0, 1.0, -4.0, 1.0, d_image, 20) 
 d_image.to_host()
 dt = timer() - start
 
-print("Mandelbrot created on GPU in %f s" % dt)
+print("julia created on GPU in %f s" % dt)
 
 imshow(gimage)
 show()
 
+
+# 
+# ## Conclusions
+# 
+# #### 1. basic syntax: 3.404387 s
+# #### 2. compiled python: 0.250383 s
+# #### 3. CUDA on GPU: 0.003787 s
 
 # In[ ]:
 

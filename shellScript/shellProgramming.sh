@@ -59,6 +59,9 @@ ans=$((x+y))
 ans=$[$a/$b]   # bash doesn't support float-point operation, awk does.
 temp=`expr 2 \* 3`   # \* means multiply, / means divide, % means take remainder
 
+## or a more robust way
+echo "$x / 100" | bc -l
+
 
 # array
 
@@ -257,7 +260,14 @@ if [[ "$i" == *"$j"* ]]; then echo 'hi'; fi
 	echo 'hi'
 esac
 
-
+# while and if 
+while read line; do 
+	if grep -q $1 $line; then 
+		grep $1 $line | awk 'BEGIN{FS="\t";}{print $11}'
+	else
+		continue
+	fi
+done < tmp1.txt
 
 # function
 
@@ -385,3 +395,10 @@ tail -n +4 # exclude first 3 lines, starts at the 4th line
 csplit my_file '/pattern/+1' {n}   # each subfile from the beginning to the start of the matching line, not include the matching line, matching line will become the 
 # first line for next round of matching, we offset by 1 meaning include the matching line, shift the cursor forward by 1. n means repeat the matching n more times, if 
 # don't specify, it will proceed 1 time, 3 means do it 2 times again.
+
+
+# anytime you need a count
+count=0
+while read line; do
+	count=$[$count+1]     # shell doesn't that explicit about if a value is integer or string, but this way is a safebet if you iniatilize the variable as a int
+	
