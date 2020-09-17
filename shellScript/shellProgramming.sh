@@ -366,7 +366,7 @@ sort -t ',' -k3,3 file   # sort by column3-column3
 { echo "adding text"; cat $file; } > new.file  
 
 # change delimiter
-awk '$1=$1' FS="," OFS="\t" file
+awk '{$1=$1}1' FS="," OFS="\t" file
 # concat two column
 awk '{print $4$5}' file
 # awk length filter
@@ -377,6 +377,8 @@ awk 'n < $0 {n=$0}END{print n}'
 cat hla2paratopeTable.txt | awk '{ printf ">%s\\n%s",$1,$2 }'
 # convert horizotal one line to vertical layout
 ​cat counts.TCGA-BRCA.txt | head -n 1 | awk '{for(i=0;i<=NF;i++){print $i}}'
+# convert vertical layout to horizontal
+echo $(seq 3 | tr -d '\n' | awk '{$1=$1}1' FS="" OFS="\t")
 # compute count/sum
 cat tmp5.txt | while read line; do cat $line | awk 'BEGIN{FS="\t";count=0;}{if(NR>1){count+=$11}}END{print count}'; done > tmp12.txt
 
