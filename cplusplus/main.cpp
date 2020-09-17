@@ -4,13 +4,12 @@
 using namespace std;
 
 /*
-check if gcc is installed on Mac
+check if gcc or clang is installed, usually they are
+gcc -c
+clang --version
 
-gcc -v
-
-if not, install it
-
-xcode-select --install
+Then in VS code
+install c++ extension and code runner. then you can run .cpp by just clicking the run button 
 
 */
 
