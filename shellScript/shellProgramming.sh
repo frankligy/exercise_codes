@@ -345,6 +345,8 @@ conda config --add channels conda-forge   # these are settings for anaocnda, not
 conda install -c bioconda scanpy
 conda install -c  anaconda git
 
+pip install pandas --upgrade
+
 
 
 
