@@ -15,7 +15,7 @@ install c++ extension and code runner. then you can run .cpp by just clicking th
 
 
 
-classs Book {
+class Book {
     private:
         string note;  // only code in this class code block can access, so it's necessary to construct a setter and getter public function to communicate with private variable
     public:
