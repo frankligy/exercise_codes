@@ -4,14 +4,14 @@
 
 This is not a project-based repository, it is just a folder for storing my daily coding, including:
 
-* Python3 
+* Python
 * R
 * Shell script
 * Latex
 * C
 * SQL
 * C++
-* Web development (HTML5,CSS3,BootStrap)
+* Web development (HTML5, CSS3, JavaScript, BootStrap)
 
 
 
