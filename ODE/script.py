@@ -98,24 +98,8 @@ ax.axhline(y=0.5,xmin=0,xmax=1,linestyle='--',c='k')
 plt.savefig('/Users/ligk2e/Desktop/ODE/figure1B_solution_curve.pdf',bbox_inches='tight')
 plt.close()
 
-# rate curve
-k1 = 1
-k2 = 1
-Rt = 1
-fig,ax = plt.subplots()
-S_options = [2,4,8]
-for S in S_options:
-    Rp = np.linspace(0,1,10)
-    removal_rate = k2 * Rp
-    production_rate = k1 * S * (Rt - Rp)
-    ax.plot(R,removal_rate,linestyle='-',c='k')
-    ax.plot(R,production_rate,linestyle='--',c='k')
-ax.set_xlim(0,1)
-ax.set_ylim(0,6)
-ax.set_xlabel('R')
-ax.set_ylabel('Rate')
-plt.savefig('/Users/ligk2e/Desktop/ODE/figure1B_rate_curve.pdf',bbox_inches='tight')
-plt.close()
+
+
 
 # signal-response curve
 k1 = 1
