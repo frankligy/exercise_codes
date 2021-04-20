@@ -1,0 +1,12 @@
+#paper2_initializer
+
+dBAX/dt=-(k_f1+k_f2*BH3_F)*BAX+k_b*BAXm_F+k_b*BAXm_BCL2
+dBAXm_BCL2/dt=k_asBAXmBCL2*BAXm_F*BCL2_F-k_dsBAXmBCL2*BAXm_BCL2-k_b*BAXm_BCL2
+dBH3_F/dt=k_prime_sBH3+k_prime2_sBH3*Stress-k_dBH3*BH3_F-k_asBH3BCL2*BH3_F*BCL2_F+k_dsBH3BCL2*BH3_BCL2
+dBH3_BCL2/dt=k_asBH3BCL2*BH3_F*BCL2_F-k_dsBH3BCL2*BH3_BCL2-k_dBH3*BH3_BCL2
+BAXm_F=BAX_T-BAX-BAXm_BCL2
+BCL2_F=BCL2_T-BH3_BCL2-BAXm_BCL2-BAXm_BCL2
+
+par BCL2_T=80,BAX_T=100,Stress=0.1,k_f1=1,k_f2=3,k_b=2,k_asBAXmBCL2=90,k_dsBAXmBCL2=0.05,k_asBH3BCL2=10,k_dsBH3BCL2=0.01,k_prime_sBH3=0.1,k_prime2_sBH3=0.6,k_dBH3=0.01
+
+done
