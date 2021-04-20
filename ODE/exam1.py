@@ -33,7 +33,7 @@ def Goldbeter_koshland(u,v,q,r):
     a = 2*u*r
     b = (v-u+v*q+u*r)**2
     c = 4*u*r*(v-u)
-    d = math.sqrt(b-c)
+    d = np.sqrt(b-c)
     e = v-u+v*q+u*r+d
     return a/e
 
@@ -50,8 +50,8 @@ X_var = m.Var(value=0.0)
 Y_var = m.Var(value=0.19)
 Z_var = m.Var(value=0.78)
 P_var = m.Var(value=0.19)
-k_d2 = m.Param()
-k_d53 = m.Param()
+k_d2 = m.Var()
+k_d53 = m.Var()
 m.Equation(X_var.dt()==-k_repair*heavisible(X_var))
 m.Equation(k_d2==k_prime_d2*(1+X_var))
 m.Equation(k_d53=k_prime_d53+k_prime2_d53*Goldbeter_koshland(Z_var,theta,J1/P_var,J2/P_var))
