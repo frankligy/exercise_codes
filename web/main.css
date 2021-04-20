@@ -1,0 +1,10 @@
+#div1 {
+    border: 1px solid red;
+    float: left;
+    margin: 5px;
+}
+
+#div2 {
+    border: 1px solid green;
+    clear: left;
+}
