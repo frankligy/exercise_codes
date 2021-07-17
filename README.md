@@ -10,7 +10,7 @@ This is not a project-based repository, it is just a folder for storing my daily
 * Latex
 * C
 * SQL
-* C++
+* Matlab
 * Web development (HTML5, CSS3, JavaScript, BootStrap)
 
 
