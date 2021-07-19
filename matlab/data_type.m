@@ -21,3 +21,10 @@ g(1,end)  % end means the last index in the axis
 h{1,2}
 g(:,1:1:2) % demo slicing start:step:end
 g(:,2:-1:1) % slicing in reversed orientation
+
+% table
+name = ["Frank";"Miranda";"Charlie"];
+gpa = [3.8;3.4;3.9];
+grade = [4;5;1];
+id = ["i1","i2","i3"];
+t = table(name,gpa,grade,'RowName',id);
