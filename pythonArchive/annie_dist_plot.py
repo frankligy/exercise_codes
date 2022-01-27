@@ -25,8 +25,10 @@ def plot_running_sum(ax,row_cite,row_tea):
     ax.set_yticks([0,1])
     ax.set_yticklabels(['tea','cite'],fontsize=3)
     ax.set_xticks([0,100,200,300,400])
+    ax.tick_params(axis='both',length=0.3)
     ax.set_xticklabels(['0','10','100','1k','10k'],fontsize=3)
     ax.set_title(row_cite.name,fontsize=3,color='red',fontweight='bold',pad=0.4)
+    ax.axhline(y=0.5,color='w',linewidth=1)
     for direction in ['right','bottom','left','top']:
         ax.spines[direction].set_visible(False)
 
