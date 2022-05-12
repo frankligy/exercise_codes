@@ -2,7 +2,7 @@
 
 # installation
 ### first check if the pacakge has been installed, and familiar with where the R package goes
-installedPackages <- installed.packages()
+installedPackages <- installed.packages()   # /Users/E0532183/Library/R/x86_64/4.2/library or /Library/Frameworks/R.framework/Versions/4.2/Resources/library
 libraryPaths <- library()$result
 searchPath <- .libPaths()
 ### auxiliary downloading tool
