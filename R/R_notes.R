@@ -33,3 +33,7 @@ R.home()   # check where is R installed
 sessionInfo()  # print all dependencies
 
 
+
+# base R function
+seq(1,10,1)
+
