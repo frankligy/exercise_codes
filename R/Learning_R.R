@@ -114,6 +114,16 @@ rownames(a_data_frame)
 colnames(a_data_frame)
 dimnames(a_data_frame)
 
+# dataframe related useful function
+
+### Selection can be using (1) index (2) name (3) boolean, negative selection is just add "-" before c
+a_data_frame[,c('x','z')]
+a_data_frame[,c(1,2)]
+a_data_frame[,c(True,False)]  
+
+
+
+
 # very useful function in R
 
 "

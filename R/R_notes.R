@@ -32,6 +32,11 @@ rm(list=ls())
 R.home()   # check where is R installed
 sessionInfo()  # print all dependencies
 
+# keyboard shortcut on Mac
+### comment out: shift + command + C
+### clear console: ctrl + L
+### Run selection: command + enter
+
 
 
 # base R function
