@@ -32,6 +32,7 @@ devtools::install_github('YingMa0107/CARD')
 ### 1. read.table (https://www.rdocumentation.org/packages/utils/versions/3.6.2/topics/read.table
 ### 2. Matrix package Matrix::readMM('path_to_mtx.mtx'), and then use rownames and colnames function to assign row,col names
 ### 3. write.table, make sure to set col.names =NA to avoid leading entry empty issue
+### 4. RDS, using readRDS or saveRDS
 
 # R commands
 rm(a)
