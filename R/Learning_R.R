@@ -122,8 +122,6 @@ a_data_frame[,c(1,2)]
 a_data_frame[,c(True,False)]  
 
 
-
-
 # very useful function in R
 
 "
@@ -162,62 +160,6 @@ NA     length would be 1, signify missing value
 NULL   length would be 0, often occur in list, can be used to remove stuff
 "
 
-# R packages
-
-a <- installed.packages()
-b <- library()
-c <- .libPaths()
-
-if(!require(devtools)){
-  install.packages("devtools")
-}
-if(!require(BiocManager)){
-  install.packages("BiocManager")
-}
-library(devtools)
-library(BiocManager)
-devtools::install_github("EDePasquale/DoubletDecon")
-BiocManager::install("DeconRNASeq",update=F)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class(c(TRUE,FALSE))
-
-test <- factor(sample(letters[1:5],30,replace=TRUE))
-
-
-
-three_d_array <- array(
-  1:24,
-  dim=c(4,3,2),
-  dimnames=list(
-    c("one","two","three","four"),
-    c("ein","zwei","drei"),
-    c("un","deux")
-  )
-)
-
-a_matrix <- matrix(
-  1:12,
-  nrow=4,   # or dim=c(4,3)
-  dimnames=list(
-    c("one","two","three","four"),
-    c("ein","zwei","drei")
-  )
-)
 
 
 
