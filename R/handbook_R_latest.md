@@ -49,12 +49,35 @@ df$column1
 df[['column1']]
 ```
 
+# structure
+```R
+# function
+f <- function() {
+
+}
+
+# for loop
+for (element in lis) {
+
+}
+
+# if condition
+
+if (startswith('data_sample','data')) {
+    
+}
+```
+
 
 ## baseR functions
 
 ```R
 table(df$column1) # return a table class
 seq(1,10,1)
+file.path('../Logic-Finder/sc_paad_frank','file.txt')
+strsplit('data_sample','_')[[1]][0]  # 'data'
+startsWith('data_sample','data_')  # T
+sprintf('my_name_is_%s','frank')
 ```
 
 
