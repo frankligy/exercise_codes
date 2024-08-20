@@ -9,6 +9,7 @@ from io import StringIO
 import subprocess
 import bisect
 from copy import deepcopy
+import random 
 
 
 from Bio.SeqIO.FastaIO import SimpleFastaParser
@@ -21,18 +22,6 @@ with open('Non_mutant_L1Hs_consensus.fa','r') as in_handle:
     for title,seq in SimpleFastaParser(in_handle):
         normal[title] = seq
 normal = normal['L1PA1']
-
-mutant = {}
-with open('L1Hs_Mutated_Correct_Frequencies.fa','r') as in_handle:
-    for title,seq in SimpleFastaParser(in_handle):
-        mutant[title] = seq
-mutant = mutant['L1PA1']
-
-mutant_pos = []    # 0-based
-for i in range(len(mutant)):
-    if normal[i] == 'C' and mutant[i] == 'T':
-        mutant_pos.append(i)
-
 
 # run orffinder, make sure configure
 # export LD_LIBRARY_PATH=/gpfs/data/yarmarkovichlab/Frank/immunopeptidome_project/engine/SNV/snv_env/lib:$LD_LIBRARY_PATH
@@ -48,7 +37,27 @@ with open('Non_mutant_L1Hs_consensus_orf.fa','r') as in_handle:
 mer = 9
 span = 3 * mer
 
+def mutate_codon(codon):
+    dic = {
+        'TCA':('TTA',0.523),
+        'TCT':('TTT',0.30),
+        'TCC':('TTC',0.10),
+        'TCG':('TTG',0.05)
+    }
 
+    subs = set(dic.keys())
+    if codon not in subs:
+        return codon
+    else:
+        replace, prob = dic[codon]
+        if random.random() < prob:
+            return replace
+        else:
+            return codon
+
+
+group1_pos = set([1,3,4,5,6,7,8])
+group2_pos = set([2,9])
 data = []
 for k,v in normal_orf.items():
     start = int(k.split('lcl|L1PA1:')[1].split('-')[0]) - 1  
@@ -57,50 +66,43 @@ for k,v in normal_orf.items():
         cds_start = start + i   
         cds_end = start + i + span - 1   
         cds = normal[cds_start:cds_end+1]
+
+        mutated_cds = ''
+        mutated_pos = []
+        for i_, j in enumerate(range(0,len(cds)-3+1,3)):
+            codon = cds[j:j+3]
+            mutated_codon = mutate_codon(codon)
+            mutated_cds += mutated_codon
+            if mutated_codon != codon:
+                mutated_pos.append(i_ + 1)
+            
         pep = str(Seq(cds).translate(to_stop=False))
+        mutated_pep = str(Seq(mutated_cds).translate(to_stop=False))
         assert '*' not in pep
-        # grab which mutant position fall into each peptide
-        start_pos = bisect.bisect_left(mutant_pos,cds_start)    
-        end_pos = bisect.bisect_right(mutant_pos,cds_end)
-        if start_pos < end_pos:
-            included_mutant_pos = mutant_pos[start_pos:end_pos]
-        else:
-            included_mutant_pos = []
-        # determine which position of the peptide will be mutated
-        for pos in included_mutant_pos:
-            p = pos - cds_start
-            pep_p = p // 3 + 1
-            mutated_cds = deepcopy(cds)
-            mutated_cds[p] == 'T'
-            mutated_pep = str(Seq(mutated_cds).translate(to_stop=False))
-            if pep == 'DCGGVGGGG':
-                print(i,cds_start,cds_end,cds,start_pos,end_pos,included_mutant_pos,p,pep_p);sys.exit('stop')
-            if not '*' in mutated_pep:
-                if pep_p == 2 or pep_p == 9:
-                    identity = 'group2'
-                    data.append((pep,mutated_pep,identity))
-                else:
-                    identity = 'group1'
-                    data.append((pep,mutated_pep,identity))
+        assert '*' not in mutated_pep
+
+
+        if len(mutated_pos) > 0:
+            group1 = False
+            group2 = False
+            if len(group1_pos.intersection(set(mutated_pos))) > 0:
+                group1 = True
+            if len(group2_pos.intersection(set(mutated_pos))) > 0:
+                group2 = True
+            if group1 and group2:
+                identity = 'both'
+            elif group1 and not group2:
+                identity = 'group1'
+            elif group2 and not group1:
+                identity = 'group2'
+            data.append((pep,mutated_pep,identity))
+        
 
 final = pd.DataFrame.from_records(data,columns=['pep','mutated_pep','identity'])
-final['differ'] = [False if item1 == item2 else True for item1, item2 in zip(final['pep'],final['mutated_pep'])]
-final = final.loc[final['differ'],:]
+final.to_csv('final.txt',sep='\t',index=None)
 
-'''
-           pep mutated_pep identity
-0    FDELREEGF   FDELREEGF   group2
-1    DELREEGFR   DELREEGFR   group1
-2    ELREEGFRR   ELREEGFRR   group1
-3    LREEGFRRS   LREEGFRRS   group1
-4    REEGFRRSN   REEGFRRSN   group1
-..         ...         ...      ...
-806  DCGGVGGGG   DCGGVGGGG   group1
-807  CGGVGGGGR   CGGVGGGGR   group1
-808  GGVGGGGRD   GGVGGGGRD   group1
-809  GVGGGGRDS   GVGGGGRDS   group2
-810  VGGGGRDSI   VGGGGRDSI   group1
-'''
+
+# use run_netmhcpan.py to get binding results for A0201 and A2402
 
 
         
