@@ -27,6 +27,8 @@ def classify_source(item):
         identity = 'contaminant'
     elif 'missense_variant' in item or 'inframe' in item or 'frameshift_variant' in item:
         identity = 'variant'
+    elif item.startswith('tr') or item.startswith('sp'):
+        identity = 'pathogen'
     elif 'fusion' in item:
         identity = 'fusion' 
     elif 'intron' in item:
@@ -38,14 +40,14 @@ def classify_source(item):
             identity = 'TE_chimeric_transcript'
         else:
             identity = 'splicing'
-    elif item.startswith('tr') or item.startswith('sp'):
-        identity = 'pathogen'
     elif '_dup' in item or item.endswith('sense'):
         identity = 'ERV'
     elif item.startswith('ENSG'):
         identity = 'self_gene'
     elif item.startswith('nc'):
         identity = 'nc_isoform'
+    else:
+        identity = 'unknown'
     return identity
 
 def rederive_fdr(msms,fdr):
@@ -63,15 +65,21 @@ def get_stats_spectra():
     # how many submitted and identified (no FDR) MS2
     data = []
     for k,v in result_dict.items():
+        technology = technology_dict[k]
+        if technology == 'orbitrap':
+            file_name = 'msmsScans_new.txt'
+        elif technology == 'bruker':
+            file_name = 'accumulatedMsmsScans_new.txt'
         msms_path = os.path.join(v,'combined','txt',file_name)
         msms = pd.read_csv(msms_path,sep='\t')
         n_submitted = msms.shape[0]
+        msms = msms.loc[msms['Reverse'] != '+',:]   # no matter how, get rid of reverse map first
         msms_identified = msms.loc[msms['Identified']=='+',:]
         n_identified = msms_identified.shape[0]
         msms_decent = msms.loc[msms['Score']>=40,:]
         n_decent = msms_decent.shape[0]
         if technology == 'orbitrap':
-            msms_all = msms.loc[(msms['Sequence'].notna()) & (msms['Reverse'].isna()),:]
+            msms_all = msms.loc[msms['Sequence'].notna(),:]
             n_all = msms_all.shape[0]
         elif technology == 'bruker':
             cond = [True if len(item) > 1 else False for item in msms['Sequence']]
@@ -94,14 +102,20 @@ def get_stats_source():
     data = []
     data_peptide = []
     for k,v in result_dict.items():
+        technology = technology_dict[k]
+        if technology == 'orbitrap':
+            file_name = 'msmsScans_new.txt'
+        elif technology == 'bruker':
+            file_name = 'accumulatedMsmsScans_new.txt'
         msms_path = os.path.join(v,'combined','txt',file_name)
         msms = pd.read_csv(msms_path,sep='\t')
+        msms = msms.loc[msms['Reverse'] != '+',:]   # no matter how, get rid of reverse map first
         if mode == 'fdr':
             msms = msms.loc[msms['Identified']=='+',:]
         elif mode == 'score':
             msms = msms.loc[msms['Score']>=40,:]
         elif mode == 'all':
-            msms = msms.loc[(msms['Sequence'].notna()) & (msms['Reverse'].isna()),:]
+            msms = msms.loc[msms['Sequence'].notna(),:]
         final_identity_col = []
         for item,pep in zip(msms['Proteins'],msms['Sequence']):
             lis = item.split(';')
@@ -118,22 +132,27 @@ def get_stats_source():
                 else:
                     if 'nc_isoform' in identities:
                         identities.remove('nc_isoform')
-
-                    if 'nuORF' in identities:
-                        if (pep not in bl) and (pep in wl):
-                            identities.remove('nuORF')
-                            if len(identities) == 1:
-                                final_identity = identities[0]
-                            else:
-                                final_identity = 'non_canonical_ambiguous'
+                        if len(identities) == 1:
+                            final_identity = identities[0]
                         else:
                             final_identity = 'non_canonical_ambiguous'   
                     else:
-                        identities.sort()
-                        if identities == ['ERV','TE_chimeric_transcript']:
-                            final_identities = 'ERV'
+
+                        if 'nuORF' in identities:
+                            if (pep not in bl) and (pep in wl):
+                                identities.remove('nuORF')
+                                if len(identities) == 1:
+                                    final_identity = identities[0]
+                                else:
+                                    final_identity = 'non_canonical_ambiguous'
+                            else:
+                                final_identity = 'non_canonical_ambiguous'   
                         else:
-                            final_identities = 'non_canonical_ambiguous'
+                            identities.sort()
+                            if identities == ['ERV','TE_chimeric_transcript']:
+                                final_identity = 'ERV'
+                            else:
+                                final_identity = 'non_canonical_ambiguous'
                     
 
             final_identity_col.append(final_identity)
@@ -178,21 +197,28 @@ def get_stats_source():
 
 def get_each_category():
     # get each category
-    for abe in ['self_gene','splicing','rna_edit','ERV','circRNA','TE_chimeric_transcript','intron_retention','pathogen','variant','fusion','non_canonical_ambiguous','nuORF','nc_isoform']:
+    for abe in ['self_gene','splicing','rna_edit','ERV','circRNA','TE_chimeric_transcript','intron_retention','pathogen','variant','fusion','non_canonical_ambiguous','nuORF','nc_isoform','unknown']:
         data_abe = []
         for k,v in result_dict.items():
+            technology = technology_dict[k]
+            if technology == 'orbitrap':
+                file_name = 'msmsScans_new.txt'
+            elif technology == 'bruker':
+                file_name = 'accumulatedMsmsScans_new.txt'
             msms_path = os.path.join(v,'combined','txt',file_name)
             msms = pd.read_csv(msms_path,sep='\t')
+            msms = msms.loc[msms['Reverse'] != '+',:]   # no matter how, get rid of reverse map first
             if mode == 'fdr':
                 msms = msms.loc[msms['Identified']=='+',:]
             elif mode == 'score':
                 msms = msms.loc[msms['Score']>=40,:]
             elif mode == 'all':
-                msms = msms.loc[(msms['Sequence'].notna()) & (msms['Reverse'].isna()),:]
+                msms = msms.loc[msms['Sequence'].notna(),:]
             final_identity_col = []
             for item,pep in zip(msms['Proteins'],msms['Sequence']):
                 lis = item.split(';')
                 identities = list(set([classify_source(element) for element in lis]))
+
                 if 'contaminant' in identities:
                     final_identity = 'contaminant'
                 elif 'reverse' in identities:
@@ -205,22 +231,26 @@ def get_each_category():
                     else:
                         if 'nc_isoform' in identities:
                             identities.remove('nc_isoform')
-
-                        if 'nuORF' in identities:
-                            if (pep not in bl) and (pep in wl):
-                                identities.remove('nuORF')
-                                if len(identities) == 1:
-                                    final_identity = identities[0]
-                                else:
-                                    final_identity = 'non_canonical_ambiguous'
+                            if len(identities) == 1:
+                                final_identity = identities[0]
                             else:
                                 final_identity = 'non_canonical_ambiguous'   
                         else:
-                            identities.sort()
-                            if identities == ['ERV','TE_chimeric_transcript']:
-                                final_identities = 'ERV'
+                            if 'nuORF' in identities:
+                                if (pep not in bl) and (pep in wl):
+                                    identities.remove('nuORF')
+                                    if len(identities) == 1:
+                                        final_identity = identities[0]
+                                    else:
+                                        final_identity = 'non_canonical_ambiguous'
+                                else:
+                                    final_identity = 'non_canonical_ambiguous'   
                             else:
-                                final_identities = 'non_canonical_ambiguous'
+                                identities.sort()
+                                if identities == ['ERV','TE_chimeric_transcript']:
+                                    final_identity = 'ERV'
+                                else:
+                                    final_identity = 'non_canonical_ambiguous'
                 final_identity_col.append(final_identity)
             msms['final_identity'] = final_identity_col
             msms = msms.loc[msms['final_identity']==abe,:]
@@ -721,6 +751,7 @@ def get_common_and_hla():
     ts_gene = bayests.loc[bayests['BayesTS']<bayests_cutoff,:].index.tolist()
     common = ts_gene
 
+
     # if it's target data, use deg 
     try:
         deg = pd.read_csv(os.path.join(atlas_dir,'deg.txt'),sep='\t',index_col=1)
@@ -763,7 +794,7 @@ def added_non_canonical_unique():
         if item1 != 'self_gene':
             if len(item2.split(';')) == 1:
                 col.append(True)
-            elif len(item2.split(';')) == 2:
+            elif len(item2.split(';')) >= 2:
                 if item1 != 'nuORF' and 'nuORF' in item2:
                     col.append(True)
                 elif item1 == 'ERV' and 'TE_info' in item2:
@@ -786,7 +817,7 @@ def added_nuorf_type():
     for item1,item2 in zip(final['typ'],final['source']):
         if item1 == 'nuORF':
             uid = item2.split('|')[0]
-            typ = uid2typ[uid]
+            typ = uid2typ.get(uid,'unknown')
             col.append(typ)
         else:
             col.append(None)
@@ -810,7 +841,7 @@ if __name__ == '__main__':
     atlas_dir = tunable_config['outdir']
     result_dict = {item:os.path.join(root_dir,item) for item in tunable_config['result_dict'].values()}  # CC1: path/to/immuno/CC1, when immuno file name is not interpretable
     mode = tunable_config['mode']
-    technology = tunable_config['technology']
+    technology_dict = tunable_config['technology']
     cores = tunable_config['cores']
     inquiry_mode = tunable_config['inquiry_mode']
     filter = True
@@ -822,10 +853,14 @@ if __name__ == '__main__':
     uid2bio = {}
     bio2hla = {}
     for row in metadata.itertuples():
+        if row.sample.endswith('.raw'):
+            ext = '.raw'
+        elif row.sample.endswith('.d'):
+            ext = '.d'
         if isinstance(row.batch,str):
-            uid = row.study + '_{}'.format(row.batch) + ',' + row.sample.split('.raw')[0]
+            uid = row.study + '_{}'.format(row.batch) + ',' + row.sample.split(ext)[0]
         else:
-            uid = row.study + ',' + row.sample.split('.raw')[0]
+            uid = row.study + ',' + row.sample.split(ext)[0]
         bio = row.biology
         hla = row.HLA
         uid2bio[uid] = bio
@@ -852,10 +887,7 @@ if __name__ == '__main__':
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    if technology == 'orbitrap':
-        file_name = 'msmsScans_new.txt'
-    elif technology == 'bruker':
-        file_name = 'accumulatedMsmsScans.txt'
+
 
     # summarization
     get_stats_spectra()
