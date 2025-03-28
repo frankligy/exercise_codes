@@ -28,17 +28,15 @@ COPY ./static /static
 COPY ./assets /assets
 
 # copy the code
-COPY web.sh /
+COPY init-shiny.sh /
 COPY web.py /
 
 # modify permission
 RUN chmod -R 777 /static
 RUN chmod -R 777 /assets
-RUN chmod 777 /web.sh
+RUN chmod 777 /init-shiny.sh
 RUN chmod 777 /web.py
 
-
-
-
-
-
+# web
+EXPOSE 3838
+CMD /opt/conda/envs/python_env/bin/python3.8 /web.py 

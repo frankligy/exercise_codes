@@ -315,5 +315,5 @@ if __name__ == '__main__':
     ])
 
     host = subprocess.run(['hostname'],stdout=subprocess.PIPE,universal_newlines=True).stdout.split('\n')[0]
-    port = 8050
+    port = 3838
     app.run(host=host,port=port)
