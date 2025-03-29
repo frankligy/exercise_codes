@@ -2,7 +2,6 @@ import sys
 import os
 import numpy as np
 import pandas as pd
-from pyteomics import mzml
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import multiprocessing as mp
@@ -314,6 +313,7 @@ if __name__ == '__main__':
         ],style={'display': 'flex', 'width': '100vw', 'height': '100vh'})
     ])
 
-    host = subprocess.run(['hostname'],stdout=subprocess.PIPE,universal_newlines=True).stdout.split('\n')[0]
+    # host = subprocess.run(['hostname'],stdout=subprocess.PIPE,universal_newlines=True).stdout.split('\n')[0]
+    host = '0.0.0.0'
     port = 3838
     app.run(host=host,port=port)

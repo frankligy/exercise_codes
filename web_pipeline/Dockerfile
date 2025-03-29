@@ -21,7 +21,7 @@ WORKDIR /
 RUN conda create -n python_env python=3.8
 RUN conda config --add channels r
 RUN conda config --add channels bioconda
-RUN /opt/conda/envs/python_env/bin/pip install pandas numpy pyteomics dash tqdm matplotlib spectrum_utils
+RUN /opt/conda/envs/python_env/bin/pip install pandas numpy pyteomics dash tqdm matplotlib spectrum_utils lxml
 
 # copy the file
 COPY ./static /static
